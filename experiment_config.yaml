@@ -1,0 +1,56 @@
+carla:
+  host: 'localhost'
+  timeout: 2.0
+  timestep: 0.1
+  retries_on_error: 25
+  resolution_x: 600
+  resolution_y: 600
+  quality_level: 'Low'
+  enable_map_assets: True
+  enable_rendering: False
+  show_display: False
+
+experiment:
+  weather: ['ClearNoon']
+  background_activity:
+    n_vehicles: 20
+    n_walkers: 10
+    tm_hybrid_mode: True
+    seed: null
+  town: 'Town05_Opt'
+
+vehicle:
+  target_speed: 30 # Km/hr
+  agent: 'Behavior'
+  behavior: 'aggressive' # 'normal' 'cautious', 'aggressive'
+  blueprint: 'vehicle.lincoln.mkz2017'
+  sensors:
+    collision:
+      type: 'sensor.other.collision'
+    imu:
+      type: 'sensor.other.imu'
+    obstacle:
+      type: 'sensor.other.obstacle'
+      distance: 5
+      hit_radius: 0.5
+      only_dynamics: True
+    # semseg:
+    #   type: 'sensor.camera.semantic_segmentation'
+    #   image_size_x: 256
+    #   image_size_y: 256
+    #   transform: '1.25,0,2,-90,0,0'
+    rgb:
+      type: 'sensor.camera.rgb'
+      image_size_x: 256
+      image_size_y: 256
+      transform: '1.25,0,2,-90,0,0'
+  sensors_process:
+    normalized: True
+    gray_scale: True
+  spawn_points: []
+
+simulation:
+  seed: 1337
+  sync: True
+  steps: 500
+  data_write_freq: 3
