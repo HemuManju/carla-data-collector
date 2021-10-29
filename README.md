@@ -38,7 +38,8 @@ TODO:
 - [ ] Add replay functionality
 - [ ] Add other traffic data (e.g. pedistrian information, obstacles, ...)
 - [ ] Add an example code to read [webdataset](https://github.com/webdataset/webdataset)
-- [ ] Add a to create a mp4 video file
+- [ ] Add a functionality to create a mp4 video file
+- [ ] Add reset function if the planning fails.
 - - - -
 
 readme file modified from: https://github.com/AlanNaoto/carla-dataset-runner
