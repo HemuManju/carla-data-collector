@@ -14,7 +14,7 @@ Types of data captured include RGB, vehicle data (speed, throttle, etc.) and tra
 ### Installation
 1. Clone this repo
 ```
-git clone https://github.com/HemuManju/carla-dataset-collector
+git clone https://github.com/HemuManju/carla-data-collector
 ```
 2. Install dependencies
 ```
