@@ -11,7 +11,7 @@ carla:
   show_display: False
 
 experiment:
-  weather: ['ClearNoon']
+  weather: ['ClearNoon', 'CloudyNoon']
   background_activity:
     n_vehicles: 20
     n_walkers: 10
@@ -52,5 +52,5 @@ vehicle:
 simulation:
   seed: 1337
   sync: True
-  steps: 500
-  data_write_freq: 3
+  steps: 25000
+  data_write_freq: 1

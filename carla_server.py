@@ -1,6 +1,7 @@
 import carla
 
 from core.carla_core import CarlaCore
+from core.helper import inspect
 
 
 class CarlaServer():
@@ -29,11 +30,7 @@ class CarlaServer():
         self.core.world.set_weather(weather)
 
     def change_town(self, town):
-        self.core.world = self.core.client.load_world(
-            map_name=town,
-            reset_settings=False,
-            map_layers=carla.MapLayer.All if
-            self.config['carla']["enable_map_assets"] else carla.MapLayer.NONE)
+        self.core.setup_experiment(self.config['experiment'], map_name=town)
 
     def step(self, control):
         """Computes one tick of the environment in order to return the new observation,

@@ -7,5 +7,5 @@ from data_collector import DataCollector
 kill_all_servers()
 config = yaml.load(open('experiment_config.yaml'), Loader=yaml.SafeLoader)
 
-collector = DataCollector(config, file_name='data', write_path='data/')
-collector.collect()
+collector = DataCollector(config)
+collector.collect(file_name='data', write_path='../../../Desktop/data/')

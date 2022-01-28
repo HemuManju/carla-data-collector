@@ -28,19 +28,18 @@ def get_nonexistant_path(fname_path):
     return new_fname
 
 
-class WebWriter():
-    def __init__(self, config, file_name, write_path) -> None:
+class WebDatasetWriter():
+    def __init__(self, config) -> None:
+        self.cfg = config
+        self.sink = None
+
+    def _setup_data_directory(self, file_name, write_path):
         # Check if file already exists, increment if so
         path_to_file = write_path + file_name + '.tar'
         write_path = get_nonexistant_path(path_to_file)
 
         # Create a tar file
         self.sink = wds.TarWriter(write_path, compress=True)
-
-        # Save the configuration
-        with open(write_path.split('.')[0] + '_configuration.json', 'w') as fp:
-            json.dump(config, fp, indent=4)
-        fp.close()
 
     def _is_jsonable(self, x):
         try:
@@ -71,6 +70,10 @@ class WebWriter():
         }
 
     def write(self, data, index):
+        if self.sink is None:
+            raise FileNotFoundError(
+                'Please call _setup_data_directory() method before calling the write method'
+            )
         self.sink.write(self.sample(data, index))
 
     def close(self):
