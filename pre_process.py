@@ -1,10 +1,4 @@
-import numpy as np
-import imageio as iio
-
-from utils import get_nonexistant_path
-
-
-class PostProcess():
+class PreProcessData():
 
     def __init__(self, config):
         self.cfg = config
@@ -19,8 +13,8 @@ class PostProcess():
                 sensor_data,
                 waypoint_data,
                 traffic_data,
-                vehicle_data=None,
-                other_data={'other_data': None}):
+                vehicle_data=-1,
+                other_data={'other_data': -1}):
         """Function to do all the post processing of observations (sensor data).
 
         :param sensor_data: dictionary {sensor_name: sensor_data}
@@ -39,28 +33,3 @@ class PostProcess():
             **other_data
         }
         return data
-
-
-class Replay():
-
-    def __init__(self, config):
-        self.cfg = config
-        self.n_collision = 0
-
-    def _get_unique_name(self, write_path):
-        fname_path = write_path + 'video.mp4'
-        save_path = get_nonexistant_path(fname_path=fname_path)
-        return save_path
-
-    def create_movie(self, samples, write_path):
-
-        save_path = self._get_unique_name(write_path)
-        writer = iio.get_writer(save_path, format='FFMPEG', mode='I')
-
-        for sample in samples:
-            array = sample['jpeg'].cpu().detach().numpy()
-            array = np.swapaxes(array, 0, 2) * 255  # Scaling co-efficient
-
-            # Write the array
-            writer.append_data(np.flipud(array).astype(np.uint8))
-        writer.close()

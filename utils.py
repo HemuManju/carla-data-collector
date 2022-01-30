@@ -1,4 +1,81 @@
 import os
+import sys
+from contextlib import contextmanager
+
+
+class SkipWith(Exception):
+    pass
+
+
+@contextmanager
+def skip_run(flag, f):
+    """To skip a block of code.
+
+    Parameters
+    ----------
+    flag : str
+        skip or run.
+
+    Returns
+    -------
+    None
+
+    """
+
+    @contextmanager
+    def check_active():
+        deactivated = ['skip']
+        p = ColorPrint()  # printing options
+        if flag in deactivated:
+            p.print_skip('{:>12}  {:>2}  {:>12}'.format(
+                'Skipping the block', '|', f))
+            raise SkipWith()
+        else:
+            p.print_run('{:>12}  {:>3}  {:>12}'.format('Running the block',
+                                                       '|', f))
+            yield
+
+    try:
+        yield check_active
+    except SkipWith:
+        pass
+
+
+class ColorPrint:
+
+    @staticmethod
+    def print_skip(message, end='\n'):
+        sys.stderr.write('\x1b[88m' + message.strip() + '\x1b[0m' + end)
+
+    @staticmethod
+    def print_run(message, end='\n'):
+        sys.stdout.write('\x1b[1;32m' + message.strip() + '\x1b[0m' + end)
+
+    @staticmethod
+    def print_warn(message, end='\n'):
+        sys.stderr.write('\x1b[1;33m' + message.strip() + '\x1b[0m' + end)
+
+
+def get_nonexistant_path(fname_path):
+    """
+        Get the path to a filename which does not exist by incrementing path.
+
+        Examples
+        --------
+        >>> get_nonexistant_path('/etc/issue')
+        '/etc/issue-1'
+        >>> get_nonexistant_path('whatever/1337bla.py')
+        'whatever/1337bla.py'
+    """
+    if not os.path.exists(fname_path):
+        return fname_path
+    filename, file_extension = os.path.splitext(fname_path)
+    i = 1
+    new_fname = "{}_{}{}".format(filename, i, file_extension)
+    while os.path.exists(new_fname):
+        i += 1
+        new_fname = "{}_{}{}".format(filename, i, file_extension)
+    return new_fname
 
 
 def create_directory(write_path):

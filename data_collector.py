@@ -11,7 +11,7 @@ from core.helper import inspect
 from agents.navigation.behavior_agent import BehaviorAgent
 from agents.navigation.basic_agent import BasicAgent
 
-from post_process import PostProcess
+from pre_process import PreProcessData
 from data_writer import WebDatasetWriter
 
 from utils import create_directory
@@ -25,7 +25,7 @@ class DataCollector():
         # Setup carla path
         os.environ["CARLA_ROOT"] = "/home/hemanth/Carla/CARLA_0.9.11"
         self.server = CarlaServer(config=self.cfg)
-        self.post_process = PostProcess(config=self.cfg)
+        self.pre_process = PreProcessData(config=self.cfg)
         self.writer = WebDatasetWriter(config=self.cfg)
         self.world = None
         self.steps = 0
@@ -81,10 +81,10 @@ class DataCollector():
             # Write data at regular intervals
             if i % self.cfg['simulation']['data_write_freq'] == 0:
                 # Process the data
-                data = self.post_process.process(sensor_data,
-                                                 waypoint_data,
-                                                 vehicle_data=vehicle_data,
-                                                 traffic_data=traffic_data)
+                data = self.pre_process.process(sensor_data,
+                                                waypoint_data,
+                                                vehicle_data=vehicle_data,
+                                                traffic_data=traffic_data)
                 data_writer.write(data, i)
 
             if agent.done():

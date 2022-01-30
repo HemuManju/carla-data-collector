@@ -52,5 +52,5 @@ vehicle:
 simulation:
   seed: 1337
   sync: True
-  steps: 25000
+  steps: 1000
   data_write_freq: 1

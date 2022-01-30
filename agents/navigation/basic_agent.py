@@ -24,6 +24,7 @@ class BasicAgent(object):
     It has several functions available to specify the route that the agent must follow,
     as well as to change its parameters in case a different driving mode is desired.
     """
+
     def __init__(self, vehicle, target_speed=20, opt_dict={}):
         """
         Initialization the agent paramters, the local and the global planner.
@@ -107,7 +108,7 @@ class BasicAgent(object):
             traffic_light.state
             traffic_light_state = 'red'
         except AttributeError:
-            traffic_light_state = None
+            traffic_light_state = -1
         traffic_data = {
             'traffic_light_state': traffic_light_state,
             'affected_by_traffic_light': affected_by_tlight

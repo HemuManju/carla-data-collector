@@ -35,11 +35,11 @@ The datasets are stored in ```data``` directory
 
 TODO:
 - [ ] Implement an automated version of [data_writer.py](data_writer.py) where the different data image types are automatically saved
-- [ ] Add replay functionality
 - [ ] Add other traffic data (e.g. pedistrian information, obstacles, ...)
-- [ ] Add an example code to read [webdataset](https://github.com/webdataset/webdataset)
-- [ ] Add a functionality to create a mp4 video file
 - [ ] Add reset function if the planning fails.
+- [x] Add an example code to read [webdataset](https://github.com/webdataset/webdataset)
+- [x] Add a functionality to create a mp4 video file
+- [x] Add replay functionality
 - - - -
 
 readme file modified from: https://github.com/AlanNaoto/carla-dataset-runner
