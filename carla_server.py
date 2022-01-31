@@ -8,6 +8,7 @@ class CarlaServer():
     """
     This is a carla environment, responsible of handling all the CARLA related steps of the training.
     """
+
     def __init__(self, config):
         """Initializes the environment"""
         self.config = config

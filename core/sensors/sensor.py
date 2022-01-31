@@ -23,6 +23,7 @@ except ModuleNotFoundError:
 
 
 class BaseSensor(object):
+
     def __init__(self, name, attributes, interface, parent):
         self.name = name
         self.attributes = attributes
@@ -53,6 +54,7 @@ class BaseSensor(object):
 
 
 class CarlaSensor(BaseSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -85,6 +87,7 @@ class CarlaSensor(BaseSensor):
 
 
 class PseudoSensor(BaseSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -96,6 +99,7 @@ class PseudoSensor(BaseSensor):
 # -- Cameras -----------------------------------------------------------------------------------
 # ==================================================================================================
 class BaseCamera(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -110,21 +114,25 @@ class BaseCamera(CarlaSensor):
 
 
 class CameraRGB(BaseCamera):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
 
 class CameraDepth(BaseCamera):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
 
 class CameraSemanticSegmentation(BaseCamera):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
 
 class CameraDVS(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -152,6 +160,7 @@ class CameraDVS(CarlaSensor):
 # -- LIDAR -----------------------------------------------------------------------------------
 # ==================================================================================================
 class Lidar(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -165,6 +174,7 @@ class Lidar(CarlaSensor):
 
 
 class SemanticLidar(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -181,6 +191,7 @@ class SemanticLidar(CarlaSensor):
 # -- Others -----------------------------------------------------------------------------------
 # ==================================================================================================
 class Radar(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -195,6 +206,7 @@ class Radar(CarlaSensor):
 
 
 class Gnss(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -208,6 +220,7 @@ class Gnss(CarlaSensor):
 
 
 class Imu(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -227,6 +240,7 @@ class Imu(CarlaSensor):
 
 
 class LaneInvasion(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -240,6 +254,7 @@ class LaneInvasion(CarlaSensor):
 
 
 class Collision(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         self._last_event_frame = 0
         super().__init__(name, attributes, interface, parent)
@@ -263,6 +278,7 @@ class Collision(CarlaSensor):
 
 
 class Obstacle(CarlaSensor):
+
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 

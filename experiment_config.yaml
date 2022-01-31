@@ -11,7 +11,7 @@ carla:
   show_display: False
 
 experiment:
-  weather: ['ClearNoon', 'CloudyNoon']
+  weather: ['ClearNoon'] # , 'CloudyNoon'
   background_activity:
     n_vehicles: 20
     n_walkers: 10
@@ -22,7 +22,7 @@ experiment:
 vehicle:
   target_speed: 30 # Km/hr
   agent: 'Behavior'
-  behavior: 'aggressive' # 'normal' 'cautious', 'aggressive'
+  behavior: 'normal' # 'normal' 'cautious', 'aggressive'
   blueprint: 'vehicle.lincoln.mkz2017'
   sensors:
     collision:
@@ -43,7 +43,7 @@ vehicle:
       type: 'sensor.camera.rgb'
       image_size_x: 256
       image_size_y: 256
-      transform: '1.25,0,2,-90,0,0'
+      transform: '1.25,0,1.7,-90,0,0'
   sensors_process:
     normalized: True
     gray_scale: True
@@ -52,5 +52,5 @@ vehicle:
 simulation:
   seed: 1337
   sync: True
-  steps: 1000
-  data_write_freq: 1
+  steps: 150000
+  data_write_freq: 3

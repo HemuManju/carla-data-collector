@@ -58,6 +58,7 @@ class CarlaCore:
     Class responsible of handling all the different CARLA functionalities, such as server-client connecting,
     actor spawning and getting the sensors data.
     """
+
     def __init__(self, config={}):
         """Initialize the server and client"""
         self.client = None
@@ -400,4 +401,5 @@ class CarlaCore:
         # print("World frame: {}".format(world_frame))
         # for name, data in sensor_data.items():
         #     print("{}: {}".format(name, data[0]))
+
         return sensor_data

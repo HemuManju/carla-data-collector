@@ -19,5 +19,5 @@ with skip_run('skip', 'collect_data') as check, check():
 with skip_run('skip', 'read_data') as check, check():
     reader = WebDatasetReader(
         config=None,
-        file_path='../../../Desktop/data/CloudyNoon_Town05_Opt.tar')
+        file_path='../../../Desktop/data/ClearNoon_Town05_Opt.tar')
     reader.create_movie()

@@ -32,9 +32,9 @@ class DataCollector():
 
         return None
 
-    def _setup_agent(self, client):
+    def _setup_agent(self):
         # Get the vehicle and set the type
-        self.world = client.get_world()
+        self.world = self.client.get_world()
         hero = self.server.hero
         if self.cfg['vehicle']['agent'] == "Basic":
             agent = BasicAgent(
@@ -50,15 +50,20 @@ class DataCollector():
 
         return agent, spawn_points
 
+    def _reset_agent(self):
+        self.server.reset()
+        agent, spawn_points = self._setup_agent()
+        return agent, spawn_points
+
     def _setup_client(self):
         if self.cfg['simulation']['seed']:
             random.seed(self.cfg['simulation']['seed'])
 
         # Setup simulation
-        client = self.server.core.client
-        client.set_timeout(2.0)
-        traffic_manager = client.get_trafficmanager()
-        sim_world = client.get_world()
+        self.client = self.server.core.client
+        self.client.set_timeout(2.0)
+        traffic_manager = self.client.get_trafficmanager()
+        sim_world = self.client.get_world()
 
         if self.cfg['simulation']['sync']:
             settings = sim_world.get_settings()
@@ -66,7 +71,7 @@ class DataCollector():
             settings.fixed_delta_seconds = 0.1
             sim_world.apply_settings(settings)
             traffic_manager.set_synchronous_mode(True)
-        return client
+        return None
 
     def _run_simulation(self, agent, spawn_points, data_writer):
         for i in tqdm(range(self.cfg['simulation']['steps'])):
@@ -87,7 +92,13 @@ class DataCollector():
                                                 traffic_data=traffic_data)
                 data_writer.write(data, i)
 
+            # Change the destination if done
             if agent.done():
+                agent.set_destination(random.choice(spawn_points).location)
+
+            # Reset if collision has happened
+            if data['collision']:
+                agent, spawn_points = self._reset_agent()
                 agent.set_destination(random.choice(spawn_points).location)
 
         return None
@@ -118,8 +129,9 @@ class DataCollector():
         ticking the agent and, if needed, the self.world.
         """
 
-        client = self._setup_client()
-        agent, spawn_points = self._setup_agent(client)
+        # Setup client and agent
+        self._setup_client()
+        agent, spawn_points = self._setup_agent()
 
         # Create a data directory
         create_directory(write_path)
@@ -133,7 +145,7 @@ class DataCollector():
                 file_name = '_'.join([weather, self.cfg['experiment']['town']])
 
                 # Save the configuration
-                self._save_configuration(client, file_name, write_path)
+                self._save_configuration(self.client, file_name, write_path)
 
                 # Setup the writer
                 self.writer._setup_data_directory(file_name, write_path)

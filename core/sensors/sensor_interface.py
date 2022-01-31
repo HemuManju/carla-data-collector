@@ -13,6 +13,7 @@ class SensorInterface(object):
     """
     Class used to handle all the sensor data management
     """
+
     def __init__(self):
         self._sensors = {}  # {name: Sensor object}
         self._data_buffers = queue.Queue()

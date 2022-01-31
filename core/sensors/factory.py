@@ -16,6 +16,7 @@ class SensorFactory(object):
     """
     Class to simplify the creation of the different CARLA sensors
     """
+
     @staticmethod
     def spawn(name, attributes, interface, parent):
         attributes = attributes.copy()

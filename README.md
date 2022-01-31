@@ -36,7 +36,7 @@ The datasets are stored in ```data``` directory
 TODO:
 - [ ] Implement an automated version of [data_writer.py](data_writer.py) where the different data image types are automatically saved
 - [ ] Add other traffic data (e.g. pedistrian information, obstacles, ...)
-- [ ] Add reset function if the planning fails.
+- [x] Add reset function if the planning fails.
 - [x] Add an example code to read [webdataset](https://github.com/webdataset/webdataset)
 - [x] Add a functionality to create a mp4 video file
 - [x] Add replay functionality
