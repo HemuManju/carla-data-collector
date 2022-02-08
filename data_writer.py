@@ -9,18 +9,9 @@ from utils import get_nonexistant_path
 
 
 class WebDatasetWriter():
-
     def __init__(self, config) -> None:
         self.cfg = config
         self.sink = None
-
-    def _setup_data_directory(self, file_name, write_path):
-        # Check if file already exists, increment if so
-        path_to_file = write_path + file_name + '.tar'
-        write_path = get_nonexistant_path(path_to_file)
-
-        # Create a tar file
-        self.sink = wds.TarWriter(write_path, compress=True)
 
     def _is_jsonable(self, x):
         try:
@@ -38,6 +29,25 @@ class WebDatasetWriter():
             del data[key]
         return data
 
+    def create_tar_file(self, file_name, write_path):
+        # Check if file already exists, increment if so
+        if self.cfg['data_writer']['shard_write']:
+            path_to_file = write_path + file_name + '_%06d.tar'
+        else:
+            path_to_file = write_path + file_name + '.tar'
+
+        # Create a folder
+        write_path = get_nonexistant_path(path_to_file)
+
+        # Create a tar file
+        if self.cfg['data_writer']['shard_write']:
+            max_count = self.cfg['data_writer']['shard_maxcount']
+            self.sink = wds.ShardWriter(write_path,
+                                        maxcount=max_count,
+                                        compress=True)
+        else:
+            self.sink = wds.TarWriter(write_path, compress=True)
+
     def sample(self, data, index):
         image_data = im.fromarray(data['rgb'])
         del data['rgb']  # No longer needed
@@ -53,7 +63,7 @@ class WebDatasetWriter():
     def write(self, data, index):
         if self.sink is None:
             raise FileNotFoundError(
-                'Please call _setup_data_directory() method before calling the write method'
+                'Please call create_tar_file() method before calling the write method'
             )
         self.sink.write(self.sample(data, index))
 

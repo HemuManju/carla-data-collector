@@ -1,6 +1,7 @@
 import random
 import os
 from tqdm import tqdm
+import itertools
 
 import json
 
@@ -17,80 +18,117 @@ from data_writer import WebDatasetWriter
 from utils import create_directory
 
 
-class DataCollector():
+def save_configuration(config, client, write_path):
+    # Get file configuration
+    client_config = inspect(client)
 
-    def __init__(self, config):
+    # Add the configuration
+    for key in config:
+        if key not in ['experiment']:
+            client_config[key + '_config'] = config[key]
+
+    # Save the configuration
+    file_name = config['experiment']['town']
+    save_path = write_path + file_name + '_configuration.json'
+    with open(save_path, 'w') as fp:
+        json.dump(client_config, fp, indent=4)
+    fp.close()
+    return None
+
+
+class AgentManager():
+
+    def __init__(self, config, server):
         self.cfg = config
-
-        # Setup carla path
-        os.environ["CARLA_ROOT"] = "/home/hemanth/Carla/CARLA_0.9.11"
-        self.server = CarlaServer(config=self.cfg)
-        self.pre_process = PreProcessData(config=self.cfg)
-        self.writer = WebDatasetWriter(config=self.cfg)
+        self.server = server
         self.world = None
         self.steps = 0
-
         return None
 
-    def _setup_agent(self):
+    def setup_agent(self, behavior=None):
         # Get the vehicle and set the type
-        self.world = self.client.get_world()
-        hero = self.server.hero
-        if self.cfg['vehicle']['agent'] == "Basic":
+        world = self.server.get_world()
+        hero = self.server.get_hero()
+
+        # Set the behavior type
+        if behavior is None:
             agent = BasicAgent(
                 hero, target_speed=self.cfg['vehicle']['target_speed'])
         else:
-            agent = BehaviorAgent(hero,
-                                  behavior=self.cfg['vehicle']['behavior'])
+            agent = BehaviorAgent(hero, behavior=behavior)
 
         # Set the agent destination
-        spawn_points = self.world.get_map().get_spawn_points()
+        spawn_points = world.get_map().get_spawn_points()
         destination = random.choice(spawn_points).location
         agent.set_destination(destination)
-
         return agent, spawn_points
 
-    def _reset_agent(self):
+    def reset_agent(self):
         self.server.reset()
-        agent, spawn_points = self._setup_agent()
+        agent, spawn_points = self.setup_agent()
         return agent, spawn_points
 
-    def _setup_client(self):
-        if self.cfg['simulation']['seed']:
-            random.seed(self.cfg['simulation']['seed'])
+    def collect_data(self, agent, pre_process=None):
+        control = agent.run_step()
 
-        # Setup simulation
-        self.client = self.server.core.client
-        self.client.set_timeout(2.0)
-        traffic_manager = self.client.get_trafficmanager()
-        sim_world = self.client.get_world()
+        # Get different kinds of data
+        vehicle_data = agent.get_vehicle_data(control)
+        traffic_data = agent.get_traffic_data()
+        waypoint_data = agent.get_waypoint_data()
+        sensor_data = self.server.step(control)
 
-        if self.cfg['simulation']['sync']:
-            settings = sim_world.get_settings()
-            settings.synchronous_mode = True
-            settings.fixed_delta_seconds = 0.1
-            sim_world.apply_settings(settings)
-            traffic_manager.set_synchronous_mode(True)
+        if pre_process is not None:
+            data = pre_process.process(sensor_data,
+                                       waypoint_data,
+                                       vehicle_data=vehicle_data,
+                                       traffic_data=traffic_data)
+        else:
+            data = {
+                **sensor_data,
+                **waypoint_data,
+                **traffic_data,
+                **vehicle_data
+            }
+        return data
+
+
+class DataCollector():
+
+    def __init__(self, config, write_path):
+        self.cfg = config
+        self.write_path = write_path
+
+        # Setup carla path and server
+        os.environ["CARLA_ROOT"] = "/home/hemanth/Carla/CARLA_0.9.11"
+        self.server = CarlaServer(config=self.cfg)
+
+        # Setup agent, writer and preprocess
+        self.agent_manager = AgentManager(config=self.cfg, server=self.server)
+        self.pre_process = PreProcessData(config=self.cfg)
+        self.writer = WebDatasetWriter(config=self.cfg)
+
+        # Create a directory and save the configuration
+        create_directory(write_path)
+
+        # Save the configuration
+        client = self.agent_manager.server.get_client()
+        save_configuration(self.cfg, client, self.write_path)
+
         return None
 
-    def _run_simulation(self, agent, spawn_points, data_writer):
-        for i in tqdm(range(self.cfg['simulation']['steps'])):
-            control = agent.run_step()
+    def write_loop(self, file_name, agent, spawn_points):
+        # Create the tar file
+        self.writer.create_tar_file(file_name, self.write_path)
 
-            # Get different kinds of data
-            vehicle_data = agent.get_vehicle_data(control)
-            traffic_data = agent.get_traffic_data()
-            waypoint_data = agent.get_waypoint_data()
-            sensor_data = self.server.step(control)
+        steps = self.cfg['data_writer']['steps']
+        for i in range(steps):
+
+            # Collect the data from agent
+            data = self.agent_manager.collect_data(agent, self.pre_process)
 
             # Write data at regular intervals
-            if i % self.cfg['simulation']['data_write_freq'] == 0:
-                # Process the data
-                data = self.pre_process.process(sensor_data,
-                                                waypoint_data,
-                                                vehicle_data=vehicle_data,
-                                                traffic_data=traffic_data)
-                data_writer.write(data, i)
+            if i % self.cfg['data_writer']['data_write_freq'] == 0:
+                self.writer.write(data, i)
 
             # Change the destination if done
             if agent.done():
@@ -98,60 +136,30 @@ class DataCollector():
 
             # Reset if collision has happened
             if data['collision']:
-                agent, spawn_points = self._reset_agent()
+                agent, spawn_points = self.agent_manager.reset_agent()
                 agent.set_destination(random.choice(spawn_points).location)
-
         return None
 
-    def _save_configuration(self, client, file_name, write_path):
-
-        # Get file configuration
-        client_config = inspect(client)
-
-        # Add carla configuration
-        client_config['carla_config'] = self.cfg['carla']
-
-        # Add vehicle configuration
-        client_config['vehicle_config'] = self.cfg['vehicle']
-
-        # Add simulation configuration
-        client_config['simulation_config'] = self.cfg['simulation']
-
-        # Save the configuration
-        save_path = write_path + file_name + '_configuration.json'
-        with open(save_path, 'w') as fp:
-            json.dump(client_config, fp, indent=4)
-        fp.close()
-
-    def collect(self, file_name, write_path):
+    def collect(self):
         """
         Main loop of the simulation. It handles updating all the HUD information,
-        ticking the agent and, if needed, the self.world.
+        ticking the agent.
         """
-
-        # Setup client and agent
-        self._setup_client()
-        agent, spawn_points = self._setup_agent()
-
-        # Create a data directory
-        create_directory(write_path)
-
         try:
-            # Iterate over weather
-            for weather in self.cfg['experiment']['weather']:
+            # Iterate over weather and behavior
+            combinations = list(
+                itertools.product(self.cfg['experiment']['weather'],
+                                  self.cfg['vehicle']['behavior']))
+            for weather, behavior in tqdm(combinations):
                 self.server.set_weather(weather)
+                agent, spawn_points = self.agent_manager.setup_agent(behavior)
 
                 # Get the new file name
-                file_name = '_'.join([weather, self.cfg['experiment']['town']])
-
-                # Save the configuration
-                self._save_configuration(self.client, file_name, write_path)
-
-                # Setup the writer
-                self.writer._setup_data_directory(file_name, write_path)
+                file_name = '_'.join(
+                    [self.cfg['experiment']['town'], weather, behavior])
 
                 # Run the simulation
-                self._run_simulation(agent, spawn_points, self.writer)
+                self.write_loop(file_name, agent, spawn_points)
 
             # Finally close the writer
             self.writer.close()

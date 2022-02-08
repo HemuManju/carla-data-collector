@@ -27,7 +27,7 @@ class Replay():
         save_path = self._get_unique_name(file_name, write_path)
         writer = iio.get_writer(save_path, format='FFMPEG', mode='I')
 
-        for sample in samples:
+        for i, sample in enumerate(samples):
             array = sample['jpeg'].cpu().detach().numpy()
             array = np.swapaxes(array, 0, 2) * 255  # Scaling co-efficient
 
@@ -86,7 +86,7 @@ class WebDatasetReader():
     def get_dataloader(self, num_workers, batch_size, concat_n_samples=None):
         # Get the dataset
         dataset = self.get_dataset(concat_n_samples=concat_n_samples)
-        dataloader = torch.utils.data.DataLoader(dataset,
+        dataloader = torch.utils.data.DataLoader(dataset.batched(batch_size),
                                                  num_workers=num_workers,
-                                                 batch_size=batch_size)
+                                                 batch_size=None)
         return dataloader

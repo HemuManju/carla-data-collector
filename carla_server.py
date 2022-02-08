@@ -1,7 +1,8 @@
+import random
+
 import carla
 
 from core.carla_core import CarlaCore
-from core.helper import inspect
 
 
 class CarlaServer():
@@ -11,15 +12,42 @@ class CarlaServer():
 
     def __init__(self, config):
         """Initializes the environment"""
-        self.config = config
+        self.cfg = config
 
-        self.core = CarlaCore(self.config['carla'])
-        self.core.setup_experiment(self.config['experiment'])
+        self.core = CarlaCore(self.cfg['carla'])
+        self.core.setup_experiment(self.cfg['experiment'])
+        self.setup_client()
         self.reset()
+
+    def setup_client(self):
+        if self.cfg['simulation']['seed']:
+            random.seed(self.cfg['simulation']['seed'])
+
+        # Setup simulation
+        self.core.client.set_timeout(2.0)
+        traffic_manager = self.core.client.get_trafficmanager()
+        sim_world = self.core.client.get_world()
+
+        if self.cfg['simulation']['sync']:
+            settings = sim_world.get_settings()
+            settings.synchronous_mode = True
+            settings.fixed_delta_seconds = 0.1
+            sim_world.apply_settings(settings)
+            traffic_manager.set_synchronous_mode(True)
+        return None
+
+    def get_client(self):
+        return self.core.client
+
+    def get_world(self):
+        return self.core.client.get_world()
+
+    def get_hero(self):
+        return self.hero
 
     def reset(self):
         # Reset sensors hero and experiment
-        self.hero = self.core.reset_hero(self.config['vehicle'])
+        self.hero = self.core.reset_hero(self.cfg['vehicle'])
 
         # Tick once and get the observations
         sensor_data = self.core.tick(None)
@@ -31,7 +59,7 @@ class CarlaServer():
         self.core.world.set_weather(weather)
 
     def change_town(self, town):
-        self.core.setup_experiment(self.config['experiment'], map_name=town)
+        self.core.setup_experiment(self.cfg['experiment'], map_name=town)
 
     def step(self, control):
         """Computes one tick of the environment in order to return the new observation,
