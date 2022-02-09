@@ -51,10 +51,10 @@ vehicle:
 
 simulation:
   seed: 1337
-  sync: True
+  sync: False
 
 data_writer:
-  steps: 1200
+  steps: 400
   shard_write: True
-  shard_maxcount: 400
-  data_write_freq: 3
+  shard_maxcount: 100
+  data_write_freq: 1

@@ -5,6 +5,9 @@ import itertools
 
 import json
 
+import ray
+import multiprocessing
+
 from core.carla_core import kill_all_servers
 from carla_server import CarlaServer
 from core.helper import inspect
@@ -164,6 +167,51 @@ class DataCollector():
             # Finally close the writer
             self.writer.close()
 
+        except KeyboardInterrupt:
+            self.writer.close()
+            kill_all_servers()
+            print('Data collection interrupted')
+
+        finally:
+            print('Finished data collection')
+            kill_all_servers()
+
+
+class ParallelDataCollector():
+
+    def __init__(self, config, write_path, number_collectors=1):
+        self.cfg = config
+        self.write_path = write_path
+        self.number_collector = number_collectors
+        return None
+
+    def single_instance_collector(self, weather, behavior):
+
+        # Set the weather and agent behavior
+        data_collector = DataCollector(self.cfg, self.write_path)
+        data_collector.server.set_weather(weather)
+        agent, spawn_points = data_collector.agent_manager.setup_agent(
+            behavior)
+
+        # Get the new file name
+        file_name = '_'.join(
+            [self.cfg['experiment']['town'], weather, behavior])
+
+        # Run the simulation
+        data_collector.write_loop(file_name, agent, spawn_points)
+        data_collector.writer.close()
+        data_collector.server.close()
+        print('_' * 32 + 'Process Done' + '_' * 32)
+        return None
+
+    def collect(self):
+        try:
+            # Iterate over weather and behavior
+            with multiprocessing.Pool(processes=self.number_collector) as pool:
+                pool.starmap(
+                    self.single_instance_collector,
+                    itertools.product(self.cfg['experiment']['weather'],
+                                      self.cfg['vehicle']['behavior']))
         except KeyboardInterrupt:
             self.writer.close()
             kill_all_servers()

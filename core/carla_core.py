@@ -82,7 +82,7 @@ class CarlaCore:
         uses_stream_port = is_used(self.server_port + 1)
         while uses_server_port and uses_stream_port:
             if uses_server_port:
-                print("Is using the server port: " + self.server_port)
+                print("Is using the server port: " + str(self.server_port))
             if uses_stream_port:
                 print("Is using the streaming port: " +
                       str(self.server_port + 1))
@@ -111,7 +111,7 @@ class CarlaCore:
 
         server_command_text = " ".join(map(str, server_command))
         print(server_command_text)
-        _ = subprocess.Popen(
+        self.process = subprocess.Popen(
             server_command_text,
             shell=True,
             preexec_fn=os.setsid,
@@ -145,6 +145,10 @@ class CarlaCore:
         raise Exception(
             "Cannot connect to server. Try increasing 'timeout' or 'retries_on_error' at the carla configuration"
         )
+
+    def kill_process(self):
+        self.process.terminate()
+        self.process.wait()
 
     def setup_experiment(self, experiment_config):
         """Initialize the hero and sensors"""

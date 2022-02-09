@@ -20,12 +20,9 @@ class CarlaServer():
         self.reset()
 
     def setup_client(self):
-        if self.cfg['simulation']['seed']:
-            random.seed(self.cfg['simulation']['seed'])
 
         # Setup simulation
         self.core.client.set_timeout(2.0)
-        traffic_manager = self.core.client.get_trafficmanager()
         sim_world = self.core.client.get_world()
 
         if self.cfg['simulation']['sync']:
@@ -33,8 +30,11 @@ class CarlaServer():
             settings.synchronous_mode = True
             settings.fixed_delta_seconds = 0.1
             sim_world.apply_settings(settings)
-            traffic_manager.set_synchronous_mode(True)
         return None
+
+    def close(self):
+        # Finally kill the process
+        self.core.kill_process()
 
     def get_client(self):
         return self.core.client
