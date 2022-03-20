@@ -4,8 +4,7 @@ import imageio as iio
 from utils import get_nonexistant_path
 
 
-class PostProcess():
-
+class PostProcess:
     def __init__(self, config):
         self.cfg = config
         self.n_collision = 0
@@ -15,12 +14,14 @@ class PostProcess():
         if 'collision' in sensor_data.keys():
             self.n_collision += 1
 
-    def process(self,
-                sensor_data,
-                waypoint_data,
-                traffic_data,
-                vehicle_data=None,
-                other_data={'other_data': None}):
+    def process(
+        self,
+        sensor_data,
+        waypoint_data,
+        traffic_data,
+        vehicle_data=None,
+        other_data={'other_data': None},
+    ):
         """Function to do all the post processing of observations (sensor data).
 
         :param sensor_data: dictionary {sensor_name: sensor_data}
@@ -36,13 +37,12 @@ class PostProcess():
             **waypoint_data,
             **traffic_data,
             **vehicle_data,
-            **other_data
+            **other_data,
         }
         return data
 
 
-class Replay():
-
+class Replay:
     def __init__(self, config):
         self.cfg = config
         self.n_collision = 0

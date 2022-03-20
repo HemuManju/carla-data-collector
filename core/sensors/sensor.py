@@ -23,7 +23,6 @@ except ModuleNotFoundError:
 
 
 class BaseSensor(object):
-
     def __init__(self, name, attributes, interface, parent):
         self.name = name
         self.attributes = attributes
@@ -40,11 +39,9 @@ class BaseSensor(object):
 
     def update_sensor(self, data, frame):
         if not self.is_event_sensor():
-            self.interface._data_buffers.put(
-                (self.name, frame, self.parse(data)))
+            self.interface._data_buffers.put((self.name, frame, self.parse(data)))
         else:
-            self.interface._event_data_buffers.put(
-                (self.name, frame, self.parse(data)))
+            self.interface._event_data_buffers.put((self.name, frame, self.parse(data)))
 
     def callback(self, data):
         self.update_sensor(data, data.frame)
@@ -54,7 +51,6 @@ class BaseSensor(object):
 
 
 class CarlaSensor(BaseSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -73,10 +69,9 @@ class CarlaSensor(BaseSensor):
 
         transform = carla.Transform(
             carla.Location(transform[0], transform[1], transform[2]),
-            carla.Rotation(transform[4], transform[5], transform[3]))
-        self.sensor = world.spawn_actor(blueprint,
-                                        transform,
-                                        attach_to=self.parent)
+            carla.Rotation(transform[4], transform[5], transform[3]),
+        )
+        self.sensor = world.spawn_actor(blueprint, transform, attach_to=self.parent)
 
         self.sensor.listen(self.callback)
 
@@ -87,7 +82,6 @@ class CarlaSensor(BaseSensor):
 
 
 class PseudoSensor(BaseSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -99,7 +93,6 @@ class PseudoSensor(BaseSensor):
 # -- Cameras -----------------------------------------------------------------------------------
 # ==================================================================================================
 class BaseCamera(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -114,25 +107,21 @@ class BaseCamera(CarlaSensor):
 
 
 class CameraRGB(BaseCamera):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
 
 class CameraDepth(BaseCamera):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
 
 class CameraSemanticSegmentation(BaseCamera):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
 
 class CameraDVS(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -142,16 +131,17 @@ class CameraDVS(CarlaSensor):
     def parse(self, sensor_data):
         """Parses the DVSEvents into an RGB image"""
         # sensor_data: [x, y, t, polarity]
-        dvs_events = np.frombuffer(sensor_data.raw_data,
-                                   dtype=np.dtype([('x', np.uint16),
-                                                   ('y', np.uint16),
-                                                   ('t', np.int64),
-                                                   ('pol', np.bool)]))
+        dvs_events = np.frombuffer(
+            sensor_data.raw_data,
+            dtype=np.dtype(
+                [('x', np.uint16), ('y', np.uint16), ('t', np.int64), ('pol', np.bool)]
+            ),
+        )
 
-        dvs_img = np.zeros((sensor_data.height, sensor_data.width, 3),
-                           dtype=np.uint8)
-        dvs_img[dvs_events[:]['y'], dvs_events[:]['x'], dvs_events[:]['pol'] *
-                2] = 255  # Blue is positive, red is negative
+        dvs_img = np.zeros((sensor_data.height, sensor_data.width, 3), dtype=np.uint8)
+        dvs_img[
+            dvs_events[:]['y'], dvs_events[:]['x'], dvs_events[:]['pol'] * 2
+        ] = 255  # Blue is positive, red is negative
 
         return dvs_img
 
@@ -160,7 +150,6 @@ class CameraDVS(CarlaSensor):
 # -- LIDAR -----------------------------------------------------------------------------------
 # ==================================================================================================
 class Lidar(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -174,7 +163,6 @@ class Lidar(CarlaSensor):
 
 
 class SemanticLidar(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -191,7 +179,6 @@ class SemanticLidar(CarlaSensor):
 # -- Others -----------------------------------------------------------------------------------
 # ==================================================================================================
 class Radar(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -206,41 +193,40 @@ class Radar(CarlaSensor):
 
 
 class Gnss(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
     def parse(self, sensor_data):
         """Parses the GnssMeasurement into an numpy array"""
         # sensor_data: [latitude, longitude, altitude]
-        return np.array([
-            sensor_data.latitude, sensor_data.longitude, sensor_data.altitude
-        ],
-                        dtype=np.float64)
+        return np.array(
+            [sensor_data.latitude, sensor_data.longitude, sensor_data.altitude],
+            dtype=np.float64,
+        )
 
 
 class Imu(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
     def parse(self, sensor_data):
         """Parses the IMUMeasurement into an numpy array"""
         # sensor_data: [accelerometer, gyroscope, compass]
-        return np.array([
-            sensor_data.accelerometer.x,
-            sensor_data.accelerometer.y,
-            sensor_data.accelerometer.z,
-            sensor_data.gyroscope.x,
-            sensor_data.gyroscope.y,
-            sensor_data.gyroscope.z,
-            sensor_data.compass,
-        ],
-                        dtype=np.float64)
+        return np.array(
+            [
+                sensor_data.accelerometer.x,
+                sensor_data.accelerometer.y,
+                sensor_data.accelerometer.z,
+                sensor_data.gyroscope.x,
+                sensor_data.gyroscope.y,
+                sensor_data.gyroscope.z,
+                sensor_data.compass,
+            ],
+            dtype=np.float64,
+        )
 
 
 class LaneInvasion(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 
@@ -254,7 +240,6 @@ class LaneInvasion(CarlaSensor):
 
 
 class Collision(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         self._last_event_frame = 0
         super().__init__(name, attributes, interface, parent)
@@ -278,7 +263,6 @@ class Collision(CarlaSensor):
 
 
 class Obstacle(CarlaSensor):
-
     def __init__(self, name, attributes, interface, parent):
         super().__init__(name, attributes, interface, parent)
 

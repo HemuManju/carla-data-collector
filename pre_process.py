@@ -1,5 +1,4 @@
-class PreProcessData():
-
+class PreProcessData:
     def __init__(self, config):
         self.cfg = config
         self.n_collision = 0
@@ -9,12 +8,14 @@ class PreProcessData():
         if 'collision' in sensor_data.keys():
             self.n_collision += 1
 
-    def process(self,
-                sensor_data,
-                waypoint_data,
-                traffic_data,
-                vehicle_data=-1,
-                other_data={'other_data': -1}):
+    def process(
+        self,
+        sensor_data,
+        waypoint_data,
+        traffic_data,
+        vehicle_data=-1,
+        other_data={'other_data': -1},
+    ):
         """Function to do all the pre processing of observations (sensor data).
 
         :param sensor_data: dictionary {sensor_name: sensor_data}
@@ -36,6 +37,6 @@ class PreProcessData():
             **waypoint_data,
             **traffic_data,
             **vehicle_data,
-            **other_data
+            **other_data,
         }
         return data

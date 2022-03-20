@@ -39,8 +39,7 @@ def save_configuration(config, client, write_path):
     return None
 
 
-class AgentManager():
-
+class AgentManager:
     def __init__(self, config, server):
         self.cfg = config
         self.server = server
@@ -55,8 +54,7 @@ class AgentManager():
 
         # Set the behavior type
         if behavior is None:
-            agent = BasicAgent(
-                hero, target_speed=self.cfg['vehicle']['target_speed'])
+            agent = BasicAgent(hero, target_speed=self.cfg['vehicle']['target_speed'])
         else:
             agent = BehaviorAgent(hero, behavior=behavior)
 
@@ -81,22 +79,18 @@ class AgentManager():
         sensor_data = self.server.step(control)
 
         if pre_process is not None:
-            data = pre_process.process(sensor_data,
-                                       waypoint_data,
-                                       vehicle_data=vehicle_data,
-                                       traffic_data=traffic_data)
+            data = pre_process.process(
+                sensor_data,
+                waypoint_data,
+                vehicle_data=vehicle_data,
+                traffic_data=traffic_data,
+            )
         else:
-            data = {
-                **sensor_data,
-                **waypoint_data,
-                **traffic_data,
-                **vehicle_data
-            }
+            data = {**sensor_data, **waypoint_data, **traffic_data, **vehicle_data}
         return data
 
 
-class DataCollector():
-
+class DataCollector:
     def __init__(self, config, write_path):
         self.cfg = config
         self.write_path = write_path
@@ -151,15 +145,18 @@ class DataCollector():
         try:
             # Iterate over weather and behavior
             combinations = list(
-                itertools.product(self.cfg['experiment']['weather'],
-                                  self.cfg['vehicle']['behavior']))
+                itertools.product(
+                    self.cfg['experiment']['weather'], self.cfg['vehicle']['behavior']
+                )
+            )
             for weather, behavior in tqdm(combinations):
                 self.server.set_weather(weather)
                 agent, spawn_points = self.agent_manager.setup_agent(behavior)
 
                 # Get the new file name
                 file_name = '_'.join(
-                    [self.cfg['experiment']['town'], weather, behavior])
+                    [self.cfg['experiment']['town'], weather, behavior]
+                )
 
                 # Run the simulation
                 self.write_loop(file_name, agent, spawn_points)
@@ -177,8 +174,7 @@ class DataCollector():
             kill_all_servers()
 
 
-class ParallelDataCollector():
-
+class ParallelDataCollector:
     def __init__(self, config, write_path, number_collectors=1):
         self.cfg = config
         self.write_path = write_path
@@ -190,18 +186,16 @@ class ParallelDataCollector():
         # Set the weather and agent behavior
         data_collector = DataCollector(self.cfg, self.write_path)
         data_collector.server.set_weather(weather)
-        agent, spawn_points = data_collector.agent_manager.setup_agent(
-            behavior)
+        agent, spawn_points = data_collector.agent_manager.setup_agent(behavior)
 
         # Get the new file name
-        file_name = '_'.join(
-            [self.cfg['experiment']['town'], weather, behavior])
+        file_name = '_'.join([self.cfg['experiment']['town'], weather, behavior])
 
         # Run the simulation
         data_collector.write_loop(file_name, agent, spawn_points)
         data_collector.writer.close()
         data_collector.server.close()
-        print('_' * 32 + 'Process Done' + '_' * 32)
+        print('-' * 32 + 'Process Done' + '-' * 32)
         return None
 
     def collect(self):
@@ -210,8 +204,11 @@ class ParallelDataCollector():
             with multiprocessing.Pool(processes=self.number_collector) as pool:
                 pool.starmap(
                     self.single_instance_collector,
-                    itertools.product(self.cfg['experiment']['weather'],
-                                      self.cfg['vehicle']['behavior']))
+                    itertools.product(
+                        self.cfg['experiment']['weather'],
+                        self.cfg['vehicle']['behavior'],
+                    ),
+                )
         except KeyboardInterrupt:
             self.writer.close()
             kill_all_servers()

@@ -11,20 +11,23 @@ import carla
 from agents.tools.misc import get_speed
 
 
-class VehiclePIDController():
+class VehiclePIDController:
     """
     VehiclePIDController is the combination of two PID controllers
     (lateral and longitudinal) to perform the
     low level control a vehicle from client side
     """
-    def __init__(self,
-                 vehicle,
-                 args_lateral,
-                 args_longitudinal,
-                 offset=0,
-                 max_throttle=0.75,
-                 max_brake=0.3,
-                 max_steering=0.8):
+
+    def __init__(
+        self,
+        vehicle,
+        args_lateral,
+        args_longitudinal,
+        offset=0,
+        max_throttle=0.75,
+        max_brake=0.3,
+        max_steering=0.8,
+    ):
         """
         Constructor method.
 
@@ -52,9 +55,11 @@ class VehiclePIDController():
         self._world = self._vehicle.get_world()
         self.past_steering = self._vehicle.get_control().steer
         self._lon_controller = PIDLongitudinalController(
-            self._vehicle, **args_longitudinal)
-        self._lat_controller = PIDLateralController(self._vehicle, offset,
-                                                    **args_lateral)
+            self._vehicle, **args_longitudinal
+        )
+        self._lat_controller = PIDLateralController(
+            self._vehicle, offset, **args_lateral
+        )
 
     def run_step(self, target_speed, waypoint):
         """
@@ -105,10 +110,11 @@ class VehiclePIDController():
         self._lon_controller.change_parameters(**args_lateral)
 
 
-class PIDLongitudinalController():
+class PIDLongitudinalController:
     """
     PIDLongitudinalController implements longitudinal control using a PID.
     """
+
     def __init__(self, vehicle, K_P=1.0, K_I=0.0, K_D=0.0, dt=0.03):
         """
         Constructor method.
@@ -161,8 +167,8 @@ class PIDLongitudinalController():
             _ie = 0.0
 
         return np.clip(
-            (self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -1.0,
-            1.0)
+            (self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0
+        )
 
     def change_parameters(self, K_P, K_I, K_D, dt):
         """Changes the PID parameters"""
@@ -172,10 +178,11 @@ class PIDLongitudinalController():
         self._dt = dt
 
 
-class PIDLateralController():
+class PIDLateralController:
     """
     PIDLateralController implements lateral control using a PID.
     """
+
     def __init__(self, vehicle, offset=0, K_P=1.0, K_I=0.0, K_D=0.0, dt=0.03):
         """
         Constructor method.
@@ -226,8 +233,9 @@ class PIDLateralController():
             # Displace the wp to the side
             w_tran = waypoint.transform
             r_vec = w_tran.get_right_vector()
-            w_loc = w_tran.location + carla.Location(x=self._offset * r_vec.x,
-                                                     y=self._offset * r_vec.y)
+            w_loc = w_tran.location + carla.Location(
+                x=self._offset * r_vec.x, y=self._offset * r_vec.y
+            )
         else:
             w_loc = waypoint.transform.location
 
@@ -237,8 +245,7 @@ class PIDLateralController():
         if wv_linalg == 0:
             _dot = 1
         else:
-            _dot = math.acos(
-                np.clip(np.dot(w_vec, v_vec) / (wv_linalg), -1.0, 1.0))
+            _dot = math.acos(np.clip(np.dot(w_vec, v_vec) / (wv_linalg), -1.0, 1.0))
         _cross = np.cross(v_vec, w_vec)
         if _cross[2] < 0:
             _dot *= -1.0
@@ -252,8 +259,8 @@ class PIDLateralController():
             _ie = 0.0
 
         return np.clip(
-            (self._k_p * _dot) + (self._k_d * _de) + (self._k_i * _ie), -1.0,
-            1.0)
+            (self._k_p * _dot) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0
+        )
 
     def change_parameters(self, K_P, K_I, K_D, dt):
         """Changes the PID parameters"""

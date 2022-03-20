@@ -5,7 +5,7 @@ import carla
 from core.carla_core import CarlaCore
 
 
-class CarlaServer():
+class CarlaServer:
     """
     This is a carla environment, responsible of handling all the CARLA related steps of the training.
     """

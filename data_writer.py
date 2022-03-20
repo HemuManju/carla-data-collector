@@ -8,7 +8,7 @@ import webdataset as wds
 from utils import get_nonexistant_path
 
 
-class WebDatasetWriter():
+class WebDatasetWriter:
     def __init__(self, config) -> None:
         self.cfg = config
         self.sink = None
@@ -42,9 +42,7 @@ class WebDatasetWriter():
         # Create a tar file
         if self.cfg['data_writer']['shard_write']:
             max_count = self.cfg['data_writer']['shard_maxcount']
-            self.sink = wds.ShardWriter(write_path,
-                                        maxcount=max_count,
-                                        compress=True)
+            self.sink = wds.ShardWriter(write_path, maxcount=max_count, compress=True)
         else:
             self.sink = wds.TarWriter(write_path, compress=True)
 
@@ -57,7 +55,7 @@ class WebDatasetWriter():
         return {
             "__key__": "sample%06d" % index,
             'jpeg': image_data,
-            'json': remaining_data
+            'json': remaining_data,
         }
 
     def write(self, data, index):

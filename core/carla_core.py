@@ -30,12 +30,10 @@ BASE_CORE_CONFIG = {
     "retries_on_error": 10,  # Number of tries to connect to the client
     "resolution_x": 600,  # Width of the server spectator camera
     "resolution_y": 600,  # Height of the server spectator camera
-    "quality_level":
-    "Low",  # Quality level of the simulation. Can be 'Low', 'High', 'Epic'
-    "enable_map_assets":
-    False,  # enable / disable all town assets except for the road
+    "quality_level": "Low",  # Quality level of the simulation. Can be 'Low', 'High', 'Epic'
+    "enable_map_assets": False,  # enable / disable all town assets except for the road
     "enable_rendering": True,  # enable / disable camera images
-    "show_display": False  # Whether or not the server will be displayed
+    "show_display": False,  # Whether or not the server will be displayed
 }
 
 
@@ -46,9 +44,7 @@ def is_used(port):
 
 def kill_all_servers():
     """Kill all PIDs that start with Carla"""
-    processes = [
-        p for p in psutil.process_iter() if "carla" in p.name().lower()
-    ]
+    processes = [p for p in psutil.process_iter() if "carla" in p.name().lower()]
     for process in processes:
         os.kill(process.pid, signal.SIGKILL)
 
@@ -84,8 +80,7 @@ class CarlaCore:
             if uses_server_port:
                 print("Is using the server port: " + str(self.server_port))
             if uses_stream_port:
-                print("Is using the streaming port: " +
-                      str(self.server_port + 1))
+                print("Is using the streaming port: " + str(self.server_port + 1))
             self.server_port += 2
             uses_server_port = is_used(self.server_port)
             uses_stream_port = is_used(self.server_port + 1)
@@ -101,12 +96,12 @@ class CarlaCore:
             server_command = [
                 "DISPLAY= ",
                 "{}/CarlaUE4.sh".format(os.environ["CARLA_ROOT"]),
-                "-opengl"  # no-display isn't supported for Unreal 4.24 with vulkan
+                "-opengl",  # no-display isn't supported for Unreal 4.24 with vulkan
             ]
 
         server_command += [
             "--carla-rpc-port={}".format(self.server_port),
-            "-quality-level={}".format(self.config["quality_level"])
+            "-quality-level={}".format(self.config["quality_level"]),
         ]
 
         server_command_text = " ".join(map(str, server_command))
@@ -123,8 +118,7 @@ class CarlaCore:
 
         for i in range(self.config["retries_on_error"]):
             try:
-                self.client = carla.Client(self.config["host"],
-                                           self.server_port)
+                self.client = carla.Client(self.config["host"], self.server_port)
                 self.client.set_timeout(self.config["timeout"])
                 self.world = self.client.get_world()
 
@@ -138,8 +132,11 @@ class CarlaCore:
                 return
 
             except Exception as e:
-                print(" Waiting for server to be ready: {}, attempt {} of {}".
-                      format(e, i + 1, self.config["retries_on_error"]))
+                print(
+                    " Waiting for server to be ready: {}, attempt {} of {}".format(
+                        e, i + 1, self.config["retries_on_error"]
+                    )
+                )
                 time.sleep(3)
 
         raise Exception(
@@ -157,25 +154,32 @@ class CarlaCore:
             map_name=experiment_config["town"],
             reset_settings=False,
             map_layers=carla.MapLayer.All
-            if self.config["enable_map_assets"] else carla.MapLayer.NONE)
+            if self.config["enable_map_assets"]
+            else carla.MapLayer.NONE,
+        )
 
         self.map = self.world.get_map()
 
         # Choose the weather of the simulation
-        weather = getattr(carla.WeatherParameters,
-                          random.choice(experiment_config["weather"]))
+        weather = getattr(
+            carla.WeatherParameters, random.choice(experiment_config["weather"])
+        )
         self.world.set_weather(weather)
 
         self.tm_port = self.server_port // 10 + self.server_port % 10
         while is_used(self.tm_port):
-            print("Traffic manager's port " + str(self.tm_port) +
-                  " is already being used. Checking the next one")
+            print(
+                "Traffic manager's port "
+                + str(self.tm_port)
+                + " is already being used. Checking the next one"
+            )
             self.tm_port += 1
         print("Traffic manager connected to port " + str(self.tm_port))
 
         self.traffic_manager = self.client.get_trafficmanager(self.tm_port)
         self.traffic_manager.set_hybrid_physics_mode(
-            experiment_config["background_activity"]["tm_hybrid_mode"])
+            experiment_config["background_activity"]["tm_hybrid_mode"]
+        )
         seed = experiment_config["background_activity"]["seed"]
         if seed is not None:
             self.traffic_manager.set_random_device_seed(seed)
@@ -202,25 +206,23 @@ class CarlaCore:
 
                 transform = [float(x) for x in transform.split(",")]
                 if len(transform) == 3:
-                    location = carla.Location(transform[0], transform[1],
-                                              transform[2])
+                    location = carla.Location(transform[0], transform[1], transform[2])
                     waypoint = self.map.get_waypoint(location)
                     waypoint = waypoint.previous(random.uniform(0, 5))[0]
-                    transform = carla.Transform(location,
-                                                waypoint.transform.rotation)
+                    transform = carla.Transform(location, waypoint.transform.rotation)
                 else:
                     assert len(transform) == 6
                     transform = carla.Transform(
-                        carla.Location(transform[0], transform[1],
-                                       transform[2]),
-                        carla.Rotation(transform[4], transform[5],
-                                       transform[3]))
+                        carla.Location(transform[0], transform[1], transform[2]),
+                        carla.Rotation(transform[4], transform[5], transform[3]),
+                    )
                 spawn_points.append(transform)
         else:
             spawn_points = self.map.get_spawn_points()
 
         self.hero_blueprints = self.world.get_blueprint_library().find(
-            hero_config['blueprint'])
+            hero_config['blueprint']
+        )
         self.hero_blueprints.set_attribute("role_name", "hero")
 
         # If already spawned, destroy it
@@ -231,8 +233,9 @@ class CarlaCore:
         random.shuffle(spawn_points, random.random)
         for i in range(0, len(spawn_points)):
             next_spawn_point = spawn_points[i % len(spawn_points)]
-            self.hero = self.world.try_spawn_actor(self.hero_blueprints,
-                                                   next_spawn_point)
+            self.hero = self.world.try_spawn_actor(
+                self.hero_blueprints, next_spawn_point
+            )
             if self.hero is not None:
                 print("Hero spawned!")
                 break
@@ -247,8 +250,7 @@ class CarlaCore:
 
         # Part 3: Spawn the new sensors
         for name, attributes in hero_config["sensors"].items():
-            _ = SensorFactory.spawn(name, attributes, self.sensor_interface,
-                                    self.hero)
+            _ = SensorFactory.spawn(name, attributes, self.sensor_interface, self.hero)
 
         return self.hero
 
@@ -267,8 +269,10 @@ class CarlaCore:
             random.shuffle(spawn_points)
         elif n_vehicles > n_spawn_points:
             logging.warning(
-                "{} vehicles were requested, but there were only {} available spawn points"
-                .format(n_vehicles, n_spawn_points))
+                "{} vehicles were requested, but there were only {} available spawn points".format(
+                    n_vehicles, n_spawn_points
+                )
+            )
             n_vehicles = n_spawn_points
 
         v_batch = []
@@ -280,73 +284,76 @@ class CarlaCore:
             v_blueprint = random.choice(v_blueprints)
             if v_blueprint.has_attribute('color'):
                 color = random.choice(
-                    v_blueprint.get_attribute('color').recommended_values)
+                    v_blueprint.get_attribute('color').recommended_values
+                )
                 v_blueprint.set_attribute('color', color)
             v_blueprint.set_attribute('role_name', 'autopilot')
 
             transform.location.z += 1
             v_batch.append(
                 SpawnActor(v_blueprint, transform).then(
-                    SetAutopilot(FutureActor, True, self.tm_port)))
+                    SetAutopilot(FutureActor, True, self.tm_port)
+                )
+            )
 
         results = self.client.apply_batch_sync(v_batch, True)
         if len(results) < n_vehicles:
             logging.warning(
                 "{} vehicles were requested but could only spawn {}".format(
-                    n_vehicles, len(results)))
+                    n_vehicles, len(results)
+                )
+            )
         vehicles_id_list = [r.actor_id for r in results if not r.error]
 
         # Spawn the walkers
         spawn_locations = [
-            self.world.get_random_location_from_navigation()
-            for i in range(n_walkers)
+            self.world.get_random_location_from_navigation() for i in range(n_walkers)
         ]
 
         w_batch = []
-        w_blueprints = self.world.get_blueprint_library().filter(
-            "walker.pedestrian.*")
+        w_blueprints = self.world.get_blueprint_library().filter("walker.pedestrian.*")
 
         for spawn_location in spawn_locations:
             w_blueprint = random.choice(w_blueprints)
             if w_blueprint.has_attribute('is_invincible'):
                 w_blueprint.set_attribute('is_invincible', 'false')
-            w_batch.append(
-                SpawnActor(w_blueprint, carla.Transform(spawn_location)))
+            w_batch.append(SpawnActor(w_blueprint, carla.Transform(spawn_location)))
 
         results = self.client.apply_batch_sync(w_batch, True)
         if len(results) < n_walkers:
             logging.warning(
                 "Could only spawn {} out of the {} requested walkers.".format(
-                    len(results), n_walkers))
+                    len(results), n_walkers
+                )
+            )
         walkers_id_list = [r.actor_id for r in results if not r.error]
 
         # Spawn the walker controllers
         wc_batch = []
-        wc_blueprint = self.world.get_blueprint_library().find(
-            'controller.ai.walker')
+        wc_blueprint = self.world.get_blueprint_library().find('controller.ai.walker')
 
         for walker_id in walkers_id_list:
-            wc_batch.append(
-                SpawnActor(wc_blueprint, carla.Transform(), walker_id))
+            wc_batch.append(SpawnActor(wc_blueprint, carla.Transform(), walker_id))
 
         results = self.client.apply_batch_sync(wc_batch, True)
         if len(results) < len(walkers_id_list):
             logging.warning(
-                "Only {} out of {} controllers could be created. Some walkers might be stopped"
-                .format(len(results), n_walkers))
+                "Only {} out of {} controllers could be created. Some walkers might be stopped".format(
+                    len(results), n_walkers
+                )
+            )
         controllers_id_list = [r.actor_id for r in results if not r.error]
 
         self.world.tick()
 
         for controller in self.world.get_actors(controllers_id_list):
             controller.start()
-            controller.go_to_location(
-                self.world.get_random_location_from_navigation())
+            controller.go_to_location(self.world.get_random_location_from_navigation())
 
         self.world.tick()
-        self.actors = self.world.get_actors(vehicles_id_list +
-                                            walkers_id_list +
-                                            controllers_id_list)
+        self.actors = self.world.get_actors(
+            vehicles_id_list + walkers_id_list + controllers_id_list
+        )
 
     def tick(self, control):
         """Performs one tick of the simulation, moving all actors, and getting the sensor data"""
@@ -370,10 +377,8 @@ class CarlaCore:
         transform = self.hero.get_transform()
 
         # Get the camera position
-        server_view_x = transform.location.x - 5 * transform.get_forward_vector(
-        ).x
-        server_view_y = transform.location.y - 5 * transform.get_forward_vector(
-        ).y
+        server_view_x = transform.location.x - 5 * transform.get_forward_vector().x
+        server_view_y = transform.location.y - 5 * transform.get_forward_vector().y
         server_view_z = transform.location.z + 3
 
         # Get the camera orientation
@@ -385,13 +390,12 @@ class CarlaCore:
         self.spectator = self.world.get_spectator()
         self.spectator.set_transform(
             carla.Transform(
-                carla.Location(x=server_view_x,
-                               y=server_view_y,
-                               z=server_view_z),
-                carla.Rotation(pitch=server_view_pitch,
-                               yaw=server_view_yaw,
-                               roll=server_view_roll),
-            ))
+                carla.Location(x=server_view_x, y=server_view_y, z=server_view_z),
+                carla.Rotation(
+                    pitch=server_view_pitch, yaw=server_view_yaw, roll=server_view_roll
+                ),
+            )
+        )
 
     def apply_hero_control(self, control):
         """Applies the control calcualted at the experiment to the hero"""

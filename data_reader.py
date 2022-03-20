@@ -11,8 +11,7 @@ from itertools import islice
 from utils import get_nonexistant_path
 
 
-class Replay():
-
+class Replay:
     def __init__(self, config):
         self.cfg = config
         self.n_collision = 0
@@ -36,8 +35,7 @@ class Replay():
         writer.close()
 
 
-class WebDatasetReader():
-
+class WebDatasetReader:
     def __init__(self, config, file_path) -> None:
         self.file_path = file_path
         self.cfg = config
@@ -46,8 +44,7 @@ class WebDatasetReader():
 
     def _concatenate_samples(self, samples):
         combined_data = {
-            k: [d.get(k) for d in samples if k in d]
-            for k in set().union(*samples)
+            k: [d.get(k) for d in samples if k in d] for k in set().union(*samples)
         }
         images = torch.stack(combined_data['jpeg'], dim=0)
         return images
@@ -58,7 +55,7 @@ class WebDatasetReader():
         if len(result) == nsamples:
             yield self._concatenate_samples(result)
         for elem in it:
-            result = result[1:] + (elem, )
+            result = result[1:] + (elem,)
             yield self._concatenate_samples(result)
 
     def create_movie(self, file_name=None, write_path=None):
@@ -79,14 +76,17 @@ class WebDatasetReader():
         if concat_n_samples is None:
             dataset = wds.WebDataset(self.file_path).decode("torchrgb")
         else:
-            dataset = wds.WebDataset(self.file_path).decode("torchrgb").pipe(
-                self._generate_seqs, concat_n_samples)
+            dataset = (
+                wds.WebDataset(self.file_path)
+                .decode("torchrgb")
+                .pipe(self._generate_seqs, concat_n_samples)
+            )
         return dataset
 
     def get_dataloader(self, num_workers, batch_size, concat_n_samples=None):
         # Get the dataset
         dataset = self.get_dataset(concat_n_samples=concat_n_samples)
-        dataloader = torch.utils.data.DataLoader(dataset.batched(batch_size),
-                                                 num_workers=num_workers,
-                                                 batch_size=None)
+        dataloader = torch.utils.data.DataLoader(
+            dataset.batched(batch_size), num_workers=num_workers, batch_size=None
+        )
         return dataloader

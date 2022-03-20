@@ -11,8 +11,7 @@ from .helper import join_dicts
 BASE_EXPERIMENT_CONFIG = {
     "hero": {
         "blueprint": "vehicle.lincoln.mkz_2017",
-        "sensors":
-        {  # Go to sensors/factory.py to check all the available sensors
+        "sensors": {  # Go to sensors/factory.py to check all the available sensors
             # "sensor_name1": {
             #     "type": blueprint,
             #     "attribute1": attribute_value1,
@@ -26,16 +25,16 @@ BASE_EXPERIMENT_CONFIG = {
         },
         "spawn_points": [
             # "0,0,0,0,0,0",  # x,y,z,roll,pitch,yaw
-        ]
+        ],
     },
     "background_activity": {
         "n_vehicles": 0,
         "n_walkers": 0,
         "tm_hybrid_mode": True,
-        "seed": None
+        "seed": None,
     },
     "town": "Town05_Opt",
-    "weather": 'ClearNoon'
+    "weather": 'ClearNoon',
 }
 
 

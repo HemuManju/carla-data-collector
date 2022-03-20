@@ -12,9 +12,12 @@ import carla
 
 from agents.navigation.local_planner import LocalPlanner
 from agents.navigation.global_route_planner import GlobalRoutePlanner
-from agents.tools.misc import (get_speed, is_within_distance,
-                               get_trafficlight_trigger_location,
-                               get_acceleration)
+from agents.tools.misc import (
+    get_speed,
+    is_within_distance,
+    get_trafficlight_trigger_location,
+    get_acceleration,
+)
 
 
 class BasicAgent(object):
@@ -68,8 +71,7 @@ class BasicAgent(object):
 
         # Initialize the planners
         self._local_planner = LocalPlanner(self._vehicle, opt_dict=opt_dict)
-        self._global_planner = GlobalRoutePlanner(self._map,
-                                                  self._sampling_resolution)
+        self._global_planner = GlobalRoutePlanner(self._map, self._sampling_resolution)
 
     def add_emergency_stop(self, control):
         """
@@ -89,7 +91,7 @@ class BasicAgent(object):
             'steer': control.steer,
             'brake': control.brake,
             'speed': get_speed(self._vehicle) / 3.6,
-            'acceleration': get_acceleration(self._vehicle)
+            'acceleration': get_acceleration(self._vehicle),
         }
         return vehicle_data
 
@@ -101,7 +103,8 @@ class BasicAgent(object):
         # Check for possible traffic light
         max_tlight_distance = self._base_tlight_threshold + vehicle_speed
         affected_by_tlight, traffic_light = self._affected_by_traffic_light(
-            lights_list, max_tlight_distance)
+            lights_list, max_tlight_distance
+        )
 
         # Attributes
         try:
@@ -111,17 +114,19 @@ class BasicAgent(object):
             traffic_light_state = -1
         traffic_data = {
             'traffic_light_state': traffic_light_state,
-            'affected_by_traffic_light': affected_by_tlight
+            'affected_by_traffic_light': affected_by_tlight,
         }
         return traffic_data
 
     def get_waypoint_data(self):
         waypoint, direction = self._local_planner.get_incoming_waypoint_and_direction(
-            steps=1)
+            steps=1
+        )
         try:
             waypoint = [
-                waypoint.transform.location.x, waypoint.transform.location.y,
-                waypoint.transform.rotation.yaw
+                waypoint.transform.location.x,
+                waypoint.transform.location.y,
+                waypoint.transform.rotation.yaw,
             ]
         except AttributeError:
             waypoint = [0, 0, 0]
@@ -172,13 +177,9 @@ class BasicAgent(object):
         end_waypoint = self._map.get_waypoint(end_location)
 
         route_trace = self.trace_route(start_waypoint, end_waypoint)
-        self._local_planner.set_global_plan(route_trace,
-                                            clean_queue=clean_queue)
+        self._local_planner.set_global_plan(route_trace, clean_queue=clean_queue)
 
-    def set_global_plan(self,
-                        plan,
-                        stop_waypoint_creation=True,
-                        clean_queue=True):
+    def set_global_plan(self, plan, stop_waypoint_creation=True, clean_queue=True):
         """
         Adds a specific plan to the agent.
 
@@ -187,9 +188,8 @@ class BasicAgent(object):
             :param clean_queue: resets the current agent's plan
         """
         self._local_planner.set_global_plan(
-            plan,
-            stop_waypoint_creation=stop_waypoint_creation,
-            clean_queue=clean_queue)
+            plan, stop_waypoint_creation=stop_waypoint_creation, clean_queue=clean_queue
+        )
 
     def trace_route(self, start_waypoint, end_waypoint):
         """
@@ -216,14 +216,16 @@ class BasicAgent(object):
         # Check for possible vehicle obstacles
         max_vehicle_distance = self._base_vehicle_threshold + vehicle_speed
         affected_by_vehicle, _ = self._vehicle_obstacle_detected(
-            vehicle_list, max_vehicle_distance)
+            vehicle_list, max_vehicle_distance
+        )
         if affected_by_vehicle:
             hazard_detected = True
 
         # Check if the vehicle is affected by a red traffic light
         max_tlight_distance = self._base_tlight_threshold + vehicle_speed
         self.affected_by_tlight, self.traffic_light = self._affected_by_traffic_light(
-            lights_list, max_tlight_distance)
+            lights_list, max_tlight_distance
+        )
         if self.affected_by_tlight:
             hazard_detected = True
 
@@ -293,9 +295,12 @@ class BasicAgent(object):
             if traffic_light.state != carla.TrafficLightState.Red:
                 continue
 
-            if is_within_distance(object_waypoint.transform,
-                                  self._vehicle.get_transform(), max_distance,
-                                  [0, 90]):
+            if is_within_distance(
+                object_waypoint.transform,
+                self._vehicle.get_transform(),
+                max_distance,
+                [0, 90],
+            ):
                 self._last_traffic_light = traffic_light
                 return (True, traffic_light)
 
@@ -334,12 +339,19 @@ class BasicAgent(object):
         for target_vehicle in vehicle_list:
             target_transform = target_vehicle.get_transform()
             target_wpt = self._map.get_waypoint(target_transform.location)
-            if target_wpt.road_id != ego_wpt.road_id or target_wpt.lane_id != ego_wpt.lane_id:
+            if (
+                target_wpt.road_id != ego_wpt.road_id
+                or target_wpt.lane_id != ego_wpt.lane_id
+            ):
                 next_wpt = self._local_planner.get_incoming_waypoint_and_direction(
-                    steps=3)[0]
+                    steps=3
+                )[0]
                 if not next_wpt:
                     continue
-                if target_wpt.road_id != next_wpt.road_id or target_wpt.lane_id != next_wpt.lane_id:
+                if (
+                    target_wpt.road_id != next_wpt.road_id
+                    or target_wpt.lane_id != next_wpt.lane_id
+                ):
                     continue
 
             target_forward_vector = target_transform.get_forward_vector()
@@ -350,7 +362,8 @@ class BasicAgent(object):
                 y=target_extent * target_forward_vector.y,
             )
 
-            if is_within_distance(target_rear_transform, ego_front_transform,
-                                  max_distance, [0, 90]):
+            if is_within_distance(
+                target_rear_transform, ego_front_transform, max_distance, [0, 90]
+            ):
                 return (True, target_vehicle)
         return (False, None)

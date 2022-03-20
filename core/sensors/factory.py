@@ -6,9 +6,20 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
-from .sensor import (CameraRGB, CameraDepth, CameraSemanticSegmentation,
-                     CameraDVS, Lidar, SemanticLidar, Radar, Gnss, Imu,
-                     LaneInvasion, Collision, Obstacle)
+from .sensor import (
+    CameraRGB,
+    CameraDepth,
+    CameraSemanticSegmentation,
+    CameraDVS,
+    Lidar,
+    SemanticLidar,
+    Radar,
+    Gnss,
+    Imu,
+    LaneInvasion,
+    Collision,
+    Obstacle,
+)
 from .bird_view_manager import BirdviewManager
 
 
@@ -36,7 +47,7 @@ class SensorFactory(object):
             "sensor.other.lane_invasion": LaneInvasion,
             "sensor.other.collision": Collision,
             "sensor.other.obstacle": Obstacle,
-            "sensor.birdview": BirdviewManager
+            "sensor.birdview": BirdviewManager,
         }
 
         if type_ in sensors.keys():

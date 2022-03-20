@@ -22,7 +22,7 @@ experiment:
 vehicle:
   target_speed: 30 # Km/hr
   agent: 'Behavior'
-  behavior: ['normal'] # 'normal' 'cautious', 'aggressive'
+  behavior: ['cautious'] # 'normal' 'cautious', 'aggressive'
   blueprint: 'vehicle.lincoln.mkz2017'
   sensors:
     collision:
@@ -51,10 +51,10 @@ vehicle:
 
 simulation:
   seed: 1337
-  sync: False
+  sync: True
 
 data_writer:
-  steps: 400
+  steps: 150000
   shard_write: True
-  shard_maxcount: 100
-  data_write_freq: 1
+  shard_maxcount: 6250
+  data_write_freq: 3

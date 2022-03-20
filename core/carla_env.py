@@ -16,12 +16,12 @@ class CarlaEnv(gym.Env):
     """
     This is a carla environment, responsible of handling all the CARLA related steps of the training.
     """
+
     def __init__(self, config):
         """Initializes the environment"""
         self.config = config
 
-        self.experiment = self.config["experiment"]["type"](
-            self.config["experiment"])
+        self.experiment = self.config["experiment"]["type"](self.config["experiment"])
         self.action_space = self.experiment.get_action_space()
         self.observation_space = self.experiment.get_observation_space()
 

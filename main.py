@@ -16,15 +16,14 @@ with skip_run('skip', 'collect_data') as check, check():
     collector.collect()
 
 with skip_run('skip', 'parallel_collect_data') as check, check():
-    collector = ParallelDataCollector(config,
-                                      write_path='../../../Desktop/data/',
-                                      number_collectors=2)
+    collector = ParallelDataCollector(
+        config, write_path='../../../Desktop/data/', number_collectors=2
+    )
     collector.collect()
 
 with skip_run('skip', 'read_data') as check, check():
     reader = WebDatasetReader(
         config=None,
-        file_path=
-        '../../../Desktop/data/Town05_Opt_HardRainNoon_normal_{000000..000003}.tar'
+        file_path='../../../Desktop/data/Town05_Opt_HardRainNoon_normal_{000000..000003}.tar',
     )
     reader.create_movie()

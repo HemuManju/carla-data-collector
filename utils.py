@@ -27,12 +27,10 @@ def skip_run(flag, f):
         deactivated = ['skip']
         p = ColorPrint()  # printing options
         if flag in deactivated:
-            p.print_skip('{:>12}  {:>2}  {:>12}'.format(
-                'Skipping the block', '|', f))
+            p.print_skip('{:>12}  {:>2}  {:>}'.format('Skipping the block', '|', f))
             raise SkipWith()
         else:
-            p.print_run('{:>12}  {:>3}  {:>12}'.format('Running the block',
-                                                       '|', f))
+            p.print_run('{:>12}  {:>3}  {:>1}'.format('Running the block', '|', f))
             yield
 
     try:
@@ -42,7 +40,6 @@ def skip_run(flag, f):
 
 
 class ColorPrint:
-
     @staticmethod
     def print_skip(message, end='\n'):
         sys.stderr.write('\x1b[88m' + message.strip() + '\x1b[0m' + end)
@@ -58,14 +55,14 @@ class ColorPrint:
 
 def get_nonexistant_path(fname_path):
     """
-        Get the path to a filename which does not exist by incrementing path.
+    Get the path to a filename which does not exist by incrementing path.
 
-        Examples
-        --------
-        >>> get_nonexistant_path('/etc/issue')
-        '/etc/issue-1'
-        >>> get_nonexistant_path('whatever/1337bla.py')
-        'whatever/1337bla.py'
+    Examples
+    --------
+    >>> get_nonexistant_path('/etc/issue')
+    '/etc/issue-1'
+    >>> get_nonexistant_path('whatever/1337bla.py')
+    'whatever/1337bla.py'
     """
     if not os.path.exists(fname_path):
         return fname_path

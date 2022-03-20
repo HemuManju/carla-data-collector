@@ -19,9 +19,15 @@ from tensorboard import program
 
 try:
     sys.path.append(
-        glob.glob('../carla/dist/carla-*%d.%d-%s.egg' %
-                  (sys.version_info.major, sys.version_info.minor,
-                   'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+        glob.glob(
+            '../carla/dist/carla-*%d.%d-%s.egg'
+            % (
+                sys.version_info.major,
+                sys.version_info.minor,
+                'win-amd64' if os.name == 'nt' else 'linux-x86_64',
+            )
+        )[0]
+    )
 except IndexError:
     pass
 
@@ -45,9 +51,7 @@ def get_ip(host):
 
 
 def find_weather_presets():
-    presets = [
-        x for x in dir(carla.WeatherParameters) if re.match('[A-Z].+', x)
-    ]
+    presets = [x for x in dir(carla.WeatherParameters) if re.match('[A-Z].+', x)]
     return [(getattr(carla.WeatherParameters, x), x) for x in presets]
 
 
@@ -68,8 +72,10 @@ def inspect(client):
     if s.fixed_delta_seconds is None:
         frame_rate = 'variable'
     else:
-        frame_rate = '%.2f ms (%d FPS)' % (1000.0 * s.fixed_delta_seconds,
-                                           1.0 / s.fixed_delta_seconds)
+        frame_rate = '%.2f ms (%d FPS)' % (
+            1000.0 * s.fixed_delta_seconds,
+            1.0 / s.fixed_delta_seconds,
+        )
 
     config = {}
 
@@ -156,7 +162,8 @@ def get_checkpoint(training_directory, name, restore=False, overwrite=False):
 
     if overwrite and restore:
         raise RuntimeError(
-            "Both 'overwrite' and 'restore' cannot be True at the same time")
+            "Both 'overwrite' and 'restore' cannot be True at the same time"
+        )
 
     if overwrite:
         if os.path.isdir(training_directory):
@@ -172,6 +179,5 @@ def get_checkpoint(training_directory, name, restore=False, overwrite=False):
 
 def launch_tensorboard(logdir, host="localhost", port="6006"):
     tb = program.TensorBoard()
-    tb.configure(
-        argv=[None, "--logdir", logdir, "--host", host, "--port", port])
+    tb.configure(argv=[None, "--logdir", logdir, "--host", host, "--port", port])
     url = tb.launch()  # noqa
