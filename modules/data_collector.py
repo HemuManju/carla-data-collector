@@ -9,14 +9,14 @@ import ray
 import multiprocessing
 
 from core.carla_core import kill_all_servers
-from carla_server import CarlaServer
 from core.helper import inspect
 
 from agents.navigation.behavior_agent import BehaviorAgent
 from agents.navigation.basic_agent import BasicAgent
 
-from pre_process import PreProcessData
-from data_writer import WebDatasetWriter
+from .carla_server import CarlaServer
+from .pre_process import PreProcessData
+from .data_writer import WebDatasetWriter
 
 from utils import create_directory
 
@@ -96,10 +96,10 @@ class DataCollector:
         self.write_path = write_path
 
         # Setup carla path and server
-        os.environ["CARLA_ROOT"] = "/home/hemanth/Carla/CARLA_0.9.11"
+        os.environ["CARLA_ROOT"] = config['carla_server']['carla_path']
         self.server = CarlaServer(config=self.cfg)
 
-        # Setup agent, writer and preprocess
+        # Setup agent, writer and preprocessor
         self.agent_manager = AgentManager(config=self.cfg, server=self.server)
         self.pre_process = PreProcessData(config=self.cfg)
         self.writer = WebDatasetWriter(config=self.cfg)
@@ -117,7 +117,7 @@ class DataCollector:
         # Create the tar file
         self.writer.create_tar_file(file_name, self.write_path)
 
-        steps = self.cfg['data_writer']['steps']
+        steps = self.cfg['collector']['steps']
         for i in range(steps):
 
             # Collect the data from agent
@@ -167,10 +167,10 @@ class DataCollector:
         except KeyboardInterrupt:
             self.writer.close()
             kill_all_servers()
-            print('Data collection interrupted')
+            print('-' * 16 + 'Data collection interrupted' + '-' * 16)
 
         finally:
-            print('Finished data collection')
+            print('-' * 16 + 'Finished data collection' + '-' * 16)
             kill_all_servers()
 
 
@@ -195,7 +195,7 @@ class ParallelDataCollector:
         data_collector.write_loop(file_name, agent, spawn_points)
         data_collector.writer.close()
         data_collector.server.close()
-        print('-' * 32 + 'Process Done' + '-' * 32)
+        print('-' * 16 + 'Process Done' + '-' * 16)
         return None
 
     def collect(self):
@@ -212,8 +212,9 @@ class ParallelDataCollector:
         except KeyboardInterrupt:
             self.writer.close()
             kill_all_servers()
-            print('Data collection interrupted')
+            print('-' * 16 + 'Data collection interrupted' + '-' * 16)
 
         finally:
-            print('Finished data collection')
+            print('-' * 16 + 'Finished data collection' + '-' * 16)
             kill_all_servers()
+

@@ -22,12 +22,14 @@ class Replay:
         return save_path
 
     def _create_movie(self, samples, file_name, write_path):
-
         save_path = self._get_unique_name(file_name, write_path)
-        writer = iio.get_writer(save_path, format='FFMPEG', mode='I')
+        writer = iio.get_writer(save_path, format='FFMPEG', mode='I', codec='mpeg4')
 
         for i, sample in enumerate(samples):
-            array = sample['jpeg'].cpu().detach().numpy()
+            if type(sample['jpeg']) is list:
+                array = torch.stack(sample['jpeg'], dim=0).cpu().detach().numpy()
+            else:
+                array = sample['jpeg'].cpu().detach().numpy()
             array = np.swapaxes(array, 0, 2) * 255  # Scaling co-efficient
 
             # Write the array
@@ -46,8 +48,7 @@ class WebDatasetReader:
         combined_data = {
             k: [d.get(k) for d in samples if k in d] for k in set().union(*samples)
         }
-        images = torch.stack(combined_data['jpeg'], dim=0)
-        return images
+        return combined_data
 
     def _generate_seqs(self, src, nsamples=3):
         it = iter(src)
@@ -59,7 +60,6 @@ class WebDatasetReader:
             yield self._concatenate_samples(result)
 
     def create_movie(self, file_name=None, write_path=None):
-
         # Get the samples
         samples = self.get_dataset()
 
@@ -72,14 +72,13 @@ class WebDatasetReader:
         self.replay._create_movie(samples, file_name, write_path)
 
     def get_dataset(self, concat_n_samples=None):
-
         if concat_n_samples is None:
             dataset = wds.WebDataset(self.file_path).decode("torchrgb")
         else:
             dataset = (
                 wds.WebDataset(self.file_path)
                 .decode("torchrgb")
-                .pipe(self._generate_seqs, concat_n_samples)
+                .then(self._generate_seqs, concat_n_samples)
             )
         return dataset
 

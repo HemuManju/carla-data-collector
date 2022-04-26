@@ -1,4 +1,5 @@
-carla:
+##------------------CARLA server config------------------##
+carla_server:
   host: 'localhost'
   timeout: 2.0
   timestep: 0.1
@@ -9,7 +10,9 @@ carla:
   enable_map_assets: True
   enable_rendering: False
   show_display: False
+  carla_path: '/home/user/Carla/CARLA_0.9.11'
 
+##------------------Experiment config------------------##
 experiment:
   weather: ['ClearNoon', 'HardRainNoon', 'ClearSunset', 'HardRainSunset']
   background_activity:
@@ -17,12 +20,13 @@ experiment:
     n_walkers: 10
     tm_hybrid_mode: True
     seed: null
-  town: 'Town05_Opt'
+  town: 'Town01'
 
+##------------------Vehicle config------------------##
 vehicle:
   target_speed: 30 # Km/hr
   agent: 'Behavior'
-  behavior: ['cautious'] # 'normal' 'cautious', 'aggressive'
+  behavior: ['cautious', 'normal'] # 'normal' 'cautious', 'aggressive'
   blueprint: 'vehicle.lincoln.mkz2017'
   sensors:
     collision:
@@ -38,7 +42,7 @@ vehicle:
     #   type: 'sensor.camera.semantic_segmentation'
     #   image_size_x: 256
     #   image_size_y: 256
-    #   transform: '1.25,0,2,-90,0,0'
+    #   transform: '1.25,0,1.85,-90,0,0'
     rgb:
       type: 'sensor.camera.rgb'
       image_size_x: 256
@@ -49,12 +53,25 @@ vehicle:
     gray_scale: True
   spawn_points: []
 
-simulation:
-  seed: 1337
-  sync: True
-
+##------------------Datawriter config------------------##
 data_writer:
-  steps: 150000
   shard_write: True
   shard_maxcount: 6250
   data_write_freq: 3
+
+##------------------Collector config------------------##
+collector:
+  steps: 900
+  data_write_path: '../../../Desktop/data/'
+  parallel_collect: False
+  number_collectors: 2
+
+##------------------Collector config------------------##
+reader:
+  data_read_path: '../../../Desktop/data/'
+  create_movie: True
+
+##------------------Simulation config------------------##
+simulation:
+  seed: 1337
+  sync: True

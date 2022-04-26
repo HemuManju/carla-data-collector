@@ -27,15 +27,23 @@ Refer to https://carla.readthedocs.io/en/latest/getting_started/ and https://git
 4. Change the settings in [experiment_config.yaml](experiment_config.yaml)
 
 
+5. Run the [collect.py](collect.py) file
+```
+python collect.py
+```
+7. To record different data types (e.g. semantic segmentation, lidar, ...), add the configuration in [experiment_config.yaml](experiment_config.yaml) and change ```sample``` function in the [data_writer.py](data_writer.py) file. Currently, the [data_writer.py](data_writer.py) saves only the RGB images and other sensor data.
+8. To create a movie from collected data, run the [read.py](read.py) file after chaning the data read path in the [experiment_config.yaml](experiment_config.yaml) file.
 
-5. Run the [main.py](main.py) file
-6. To record different data types (e.g. semantic segmentation, lidar, ...), add the configuration in [experiment_config.yaml](experiment_config.yaml) and change ```sample``` function in the [data_writer.py](data_writer.py) file. Currently, the [data_writer.py](data_writer.py) saves only the RGB images and other sensor data.
+```
+python read.py
+```
 
 The datasets are stored in ```data``` directory
 
 TODO:
 - [ ] Implement an automated version of [data_writer.py](data_writer.py) where the different data image types are automatically saved
 - [ ] Add other traffic data (e.g. pedistrian information, obstacles, ...)
+- [ ] Add a noiser module
 - [x] Add reset function if the planning fails.
 - [x] Add an example code to read [webdataset](https://github.com/webdataset/webdataset)
 - [x] Add a functionality to create a mp4 video file

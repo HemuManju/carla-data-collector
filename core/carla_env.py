@@ -25,7 +25,7 @@ class CarlaEnv(gym.Env):
         self.action_space = self.experiment.get_action_space()
         self.observation_space = self.experiment.get_observation_space()
 
-        self.core = CarlaCore(self.config['carla'])
+        self.core = CarlaCore(self.config['carla_server'])
         self.core.setup_experiment(self.experiment.config)
 
         self.reset()

@@ -14,13 +14,12 @@ class CarlaServer:
         """Initializes the environment"""
         self.cfg = config
 
-        self.core = CarlaCore(self.cfg['carla'])
+        self.core = CarlaCore(self.cfg['carla_server'])
         self.core.setup_experiment(self.cfg['experiment'])
         self.setup_client()
         self.reset()
 
     def setup_client(self):
-
         # Setup simulation
         self.core.client.set_timeout(2.0)
         sim_world = self.core.client.get_world()
@@ -59,7 +58,8 @@ class CarlaServer:
         self.core.world.set_weather(weather)
 
     def change_town(self, town):
-        self.core.setup_experiment(self.cfg['experiment'], map_name=town)
+        # self.core.setup_experiment(self.cfg['experiment'], map_name=town)
+        raise NotImplementedError
 
     def step(self, control):
         """Computes one tick of the environment in order to return the new observation,

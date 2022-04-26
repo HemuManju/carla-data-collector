@@ -253,3 +253,6 @@ Thumbs.db
 
 # By default exclude logs
 /logs/
+
+# Ignore main file
+main.py
