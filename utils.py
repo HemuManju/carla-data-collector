@@ -75,6 +75,25 @@ def get_nonexistant_path(fname_path):
     return new_fname
 
 
+def get_nonexistant_shard_path(fname_path):
+    """
+    Get the path to a filename which does not exist by incrementing path.
+
+    Examples
+    --------
+    >>> get_nonexistant_path('/etc/issue')
+    '/etc/issue-1'
+    >>> get_nonexistant_path('whatever/1337bla.py')
+    'whatever/1337bla.py'
+    """
+    if not os.path.isfile(fname_path % 0):
+        return fname_path
+    start_index = 1
+    while os.path.exists(fname_path % start_index):
+        start_index += 1
+    return start_index
+
+
 def create_directory(write_path):
     if not os.path.exists(write_path):
 

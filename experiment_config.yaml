@@ -10,11 +10,19 @@ carla_server:
   enable_map_assets: True
   enable_rendering: False
   show_display: False
-  carla_path: '/home/user/Carla/CARLA_0.9.11'
+  carla_path: '/home/hemanth/Carla/CARLA_0.9.11'
 
 ##------------------Experiment config------------------##
 experiment:
-  weather: ['ClearNoon', 'HardRainNoon', 'ClearSunset', 'HardRainSunset']
+  weather:
+    [
+      'ClearNoon',
+      'SoftRainNoon',
+      'HardRainNoon',
+      'ClearSunset',
+      'SoftRainSunset',
+      'HardRainSunset',
+    ]
   background_activity:
     n_vehicles: 20
     n_walkers: 10
@@ -61,17 +69,18 @@ data_writer:
 
 ##------------------Collector config------------------##
 collector:
-  steps: 900
-  data_write_path: '../../../Desktop/data/'
-  parallel_collect: False
-  number_collectors: 2
+  steps: 300000
+  data_write_path: '../../../Desktop/carla_data/Town01/'
+  parallel_collect: True
+  number_collectors: 4
 
 ##------------------Collector config------------------##
 reader:
-  data_read_path: '../../../Desktop/data/'
+  data_read_path: '../../../Desktop/carla_data/Town01/'
   create_movie: True
 
 ##------------------Simulation config------------------##
 simulation:
   seed: 1337
   sync: True
+# ../../../Desktop/CIRL Pace Cluster/carla-imitation-learning/data/raw/

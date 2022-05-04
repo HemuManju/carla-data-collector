@@ -5,7 +5,6 @@ import itertools
 
 import json
 
-import ray
 import multiprocessing
 
 from core.carla_core import kill_all_servers
@@ -181,7 +180,7 @@ class ParallelDataCollector:
         self.number_collector = number_collectors
         return None
 
-    def single_instance_collector(self, weather, behavior):
+    def single_instance_collector(self, weather, behavior, semaphore):
 
         # Set the weather and agent behavior
         data_collector = DataCollector(self.cfg, self.write_path)
@@ -196,19 +195,29 @@ class ParallelDataCollector:
         data_collector.writer.close()
         data_collector.server.close()
         print('-' * 16 + 'Process Done' + '-' * 16)
+
+        semaphore.release()
         return None
 
     def collect(self):
         try:
-            # Iterate over weather and behavior
-            with multiprocessing.Pool(processes=self.number_collector) as pool:
-                pool.starmap(
-                    self.single_instance_collector,
-                    itertools.product(
-                        self.cfg['experiment']['weather'],
-                        self.cfg['vehicle']['behavior'],
-                    ),
+            concurrency = self.number_collector
+            semaphore = multiprocessing.Semaphore(concurrency)
+            all_processes = []
+            for weather, behavior in itertools.product(
+                self.cfg['experiment']['weather'], self.cfg['vehicle']['behavior'],
+            ):
+                semaphore.acquire()
+                p = multiprocessing.Process(
+                    target=self.single_instance_collector,
+                    args=(weather, behavior, semaphore),
                 )
+                all_processes.append(p)
+                p.start()
+
+            for p in all_processes:
+                p.join()
+
         except KeyboardInterrupt:
             self.writer.close()
             kill_all_servers()

@@ -5,7 +5,7 @@ from PIL import Image as im
 
 import webdataset as wds
 
-from utils import get_nonexistant_path
+from utils import get_nonexistant_shard_path, get_nonexistant_path
 
 
 class WebDatasetWriter:
@@ -33,6 +33,7 @@ class WebDatasetWriter:
         # Check if file already exists, increment if so
         if self.cfg['data_writer']['shard_write']:
             path_to_file = write_path + file_name + '_%06d.tar'
+            shard_start_index = get_nonexistant_shard_path(path_to_file)
         else:
             path_to_file = write_path + file_name + '.tar'
 

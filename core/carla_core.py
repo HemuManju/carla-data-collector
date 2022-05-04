@@ -49,6 +49,13 @@ def kill_all_servers():
         os.kill(process.pid, signal.SIGKILL)
 
 
+def kill(proc_pid):
+    process = psutil.Process(proc_pid)
+    for proc in process.children(recursive=True):
+        proc.kill()
+    process.kill()
+
+
 class CarlaCore:
     """
     Class responsible of handling all the different CARLA functionalities, such as server-client connecting,
@@ -144,8 +151,8 @@ class CarlaCore:
         )
 
     def kill_process(self):
-        self.process.terminate()
-        self.process.wait()
+        kill(self.process.pid)
+        time.sleep(2)
 
     def setup_experiment(self, experiment_config):
         """Initialize the hero and sensors"""
