@@ -19,6 +19,8 @@ from agents.tools.misc import (
     get_acceleration,
 )
 
+from .local_planner import _compute_modified_connection
+
 
 class BasicAgent(object):
     """
@@ -92,6 +94,7 @@ class BasicAgent(object):
             'brake': control.brake,
             'speed': get_speed(self._vehicle) / 3.6,
             'acceleration': get_acceleration(self._vehicle),
+            'position': None,  # TODO: Need to implement
         }
         return vehicle_data
 
@@ -120,8 +123,10 @@ class BasicAgent(object):
 
     def get_waypoint_data(self):
         waypoint, direction = self._local_planner.get_incoming_waypoint_and_direction(
-            steps=1
+            steps=0
         )
+        current = self._vehicle.get_transform()
+        modified_direction = _compute_modified_connection(current, waypoint)
         try:
             waypoint = [
                 waypoint.transform.location.x,
@@ -130,7 +135,12 @@ class BasicAgent(object):
             ]
         except AttributeError:
             waypoint = [0, 0, 0]
-        waypoint_data = {'waypoint': waypoint, 'direction': direction.value}
+        waypoint_data = {
+            'waypoint': waypoint,
+            'direction': direction.value,
+            'modified_direction': modified_direction.value,
+        }
+
         return waypoint_data
 
     def set_target_speed(self, speed):
@@ -332,8 +342,7 @@ class BasicAgent(object):
         ego_extent = self._vehicle.bounding_box.extent.x
         ego_front_transform = ego_transform
         ego_front_transform.location += carla.Location(
-            x=ego_extent * ego_forward_vector.x,
-            y=ego_extent * ego_forward_vector.y,
+            x=ego_extent * ego_forward_vector.x, y=ego_extent * ego_forward_vector.y,
         )
 
         for target_vehicle in vehicle_list:

@@ -257,7 +257,7 @@ class Collision(CarlaSensor):
         """Parses the ObstacleDetectionEvent into a list"""
         # sensor_data: [other actor, distance]
         impulse = sensor_data.normal_impulse
-        impulse_value = math.sqrt(impulse.x**2 + impulse.y**2 + impulse.z**2)
+        impulse_value = math.sqrt(impulse.x ** 2 + impulse.y ** 2 + impulse.z ** 2)
         # [sensor_data.other_actor, impulse_value]
         return impulse_value
 

@@ -37,7 +37,7 @@ def get_speed(vehicle):
     """
     vel = vehicle.get_velocity()
 
-    return 3.6 * math.sqrt(vel.x**2 + vel.y**2 + vel.z**2)
+    return 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
 
 
 def get_acceleration(vehicle):
@@ -49,7 +49,7 @@ def get_acceleration(vehicle):
     """
     acc = vehicle.get_acceleration()
 
-    return math.sqrt(acc.x**2 + acc.y**2 + acc.z**2)
+    return math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2)
 
 
 def get_trafficlight_trigger_location(traffic_light):

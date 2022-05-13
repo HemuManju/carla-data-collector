@@ -3,6 +3,8 @@ import imageio as iio
 
 from pathlib import Path
 
+import pandas as pd
+
 import webdataset as wds
 import torch
 
@@ -35,6 +37,19 @@ class Replay:
             # Write the array
             writer.append_data(np.flipud(array).astype(np.uint8))
         writer.close()
+
+
+class Summary:
+    def __init__(self, config):
+        self.cfg = config
+
+    def summarize(self, samples):
+        data = []
+        for sample in samples:
+            data.append(sample['json'])
+
+        df = pd.DataFrame(data)
+        print(df.describe())
 
 
 class WebDatasetReader:

@@ -3,6 +3,10 @@ import sys
 from contextlib import contextmanager
 
 
+from pathlib import Path
+import natsort
+
+
 class SkipWith(Exception):
     pass
 
@@ -100,3 +104,8 @@ def create_directory(write_path):
         # Create a new directory because it does not exist
         os.makedirs(write_path)
         print("Created new data directory!")
+
+
+def find_tar_files(read_path, pattern):
+    files = [str(f) for f in Path(read_path).glob('*.tar') if f.match(pattern + '*')]
+    return natsort.natsorted(files)

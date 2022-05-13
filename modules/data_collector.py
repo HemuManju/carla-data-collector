@@ -7,6 +7,8 @@ import json
 
 import multiprocessing
 
+import pandas as pd
+
 from core.carla_core import kill_all_servers
 from core.helper import inspect
 
@@ -44,29 +46,26 @@ class AgentManager:
         self.server = server
         self.world = None
         self.steps = 0
+
         return None
 
     def setup_agent(self, behavior=None):
         # Get the vehicle and set the type
-        world = self.server.get_world()
         hero = self.server.get_hero()
 
         # Set the behavior type
         if behavior is None:
-            agent = BasicAgent(hero, target_speed=self.cfg['vehicle']['target_speed'])
+            self.agent = BasicAgent(
+                hero, target_speed=self.cfg['vehicle']['target_speed']
+            )
         else:
-            agent = BehaviorAgent(hero, behavior=behavior)
-
-        # Set the agent destination
-        spawn_points = world.get_map().get_spawn_points()
-        destination = random.choice(spawn_points).location
-        agent.set_destination(destination)
-        return agent, spawn_points
+            self.agent = BehaviorAgent(hero, behavior=behavior)
+        return self.agent
 
     def reset_agent(self):
         self.server.reset()
-        agent, spawn_points = self.setup_agent()
-        return agent, spawn_points
+        self.agent.set_destination(self.server.core.end_point.location)
+        return None
 
     def collect_data(self, agent, pre_process=None):
         control = agent.run_step()
@@ -94,6 +93,10 @@ class DataCollector:
         self.cfg = config
         self.write_path = write_path
 
+        # Setup the route points
+        self.construct_route_points()
+        self.cfg['vehicle']['route_points'] = self.route_points
+
         # Setup carla path and server
         os.environ["CARLA_ROOT"] = config['carla_server']['carla_path']
         self.server = CarlaServer(config=self.cfg)
@@ -112,7 +115,22 @@ class DataCollector:
 
         return None
 
-    def write_loop(self, file_name, agent, spawn_points):
+    def construct_route_points(self):
+        dfs = []
+        for navigation in self.cfg['experiment']['navigation_type']:
+            dfs.append(
+                pd.read_xml(
+                    f'routes/corl2017/Town01_{navigation}.xml', xpath=".//waypoint"
+                )
+            )
+        data = pd.concat(dfs).values.tolist()
+
+        self.route_points = []
+        for i in range(0, len(data), 2):
+            self.route_points.append([data[i], data[i + 1]])
+        return None
+
+    def write_loop(self, file_name, agent):
         # Create the tar file
         self.writer.create_tar_file(file_name, self.write_path)
 
@@ -126,14 +144,9 @@ class DataCollector:
             if i % self.cfg['data_writer']['data_write_freq'] == 0:
                 self.writer.write(data, i)
 
-            # Change the destination if done
-            if agent.done():
-                agent.set_destination(random.choice(spawn_points).location)
-
             # Reset if collision has happened
-            if data['collision']:
-                agent, spawn_points = self.agent_manager.reset_agent()
-                agent.set_destination(random.choice(spawn_points).location)
+            if data['collision'] or agent.done():
+                self.agent_manager.reset_agent()
         return None
 
     def collect(self):
@@ -150,7 +163,10 @@ class DataCollector:
             )
             for weather, behavior in tqdm(combinations):
                 self.server.set_weather(weather)
-                agent, spawn_points = self.agent_manager.setup_agent(behavior)
+
+                # Setup the agent behavior
+                agent = self.agent_manager.setup_agent(behavior)
+                self.agent_manager.reset_agent()
 
                 # Get the new file name
                 file_name = '_'.join(
@@ -158,7 +174,7 @@ class DataCollector:
                 )
 
                 # Run the simulation
-                self.write_loop(file_name, agent, spawn_points)
+                self.write_loop(file_name, agent)
 
             # Finally close the writer
             self.writer.close()
@@ -185,13 +201,13 @@ class ParallelDataCollector:
         # Set the weather and agent behavior
         data_collector = DataCollector(self.cfg, self.write_path)
         data_collector.server.set_weather(weather)
-        agent, spawn_points = data_collector.agent_manager.setup_agent(behavior)
+        agent, path_points = data_collector.agent_manager.setup_agent(behavior)
 
         # Get the new file name
         file_name = '_'.join([self.cfg['experiment']['town'], weather, behavior])
 
         # Run the simulation
-        data_collector.write_loop(file_name, agent, spawn_points)
+        data_collector.write_loop(file_name, agent, path_points)
         data_collector.writer.close()
         data_collector.server.close()
         print('-' * 16 + 'Process Done' + '-' * 16)
@@ -226,4 +242,3 @@ class ParallelDataCollector:
         finally:
             print('-' * 16 + 'Finished data collection' + '-' * 16)
             kill_all_servers()
-

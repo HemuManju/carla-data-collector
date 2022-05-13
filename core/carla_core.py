@@ -199,55 +199,37 @@ class CarlaCore:
 
     def reset_hero(self, hero_config):
         """This function resets / spawns the hero vehicle and its sensors"""
-
         # Part 1: destroy all sensors (if necessary)
         self.sensor_interface.destroy()
-
         self.world.tick()
-
-        # Part 2: Spawn the ego vehicle
-        user_spawn_points = hero_config["spawn_points"]
-        if user_spawn_points:
-            spawn_points = []
-            for transform in user_spawn_points:
-
-                transform = [float(x) for x in transform.split(",")]
-                if len(transform) == 3:
-                    location = carla.Location(transform[0], transform[1], transform[2])
-                    waypoint = self.map.get_waypoint(location)
-                    waypoint = waypoint.previous(random.uniform(0, 5))[0]
-                    transform = carla.Transform(location, waypoint.transform.rotation)
-                else:
-                    assert len(transform) == 6
-                    transform = carla.Transform(
-                        carla.Location(transform[0], transform[1], transform[2]),
-                        carla.Rotation(transform[4], transform[5], transform[3]),
-                    )
-                spawn_points.append(transform)
-        else:
-            spawn_points = self.map.get_spawn_points()
 
         self.hero_blueprints = self.world.get_blueprint_library().find(
             hero_config['blueprint']
         )
         self.hero_blueprints.set_attribute("role_name", "hero")
-
-        # If already spawned, destroy it
-        if self.hero is not None:
-            self.hero.destroy()
-            self.hero = None
-
-        random.shuffle(spawn_points, random.random)
-        for i in range(0, len(spawn_points)):
-            next_spawn_point = spawn_points[i % len(spawn_points)]
-            self.hero = self.world.try_spawn_actor(
-                self.hero_blueprints, next_spawn_point
-            )
-            if self.hero is not None:
-                print("Hero spawned!")
-                break
-            else:
-                print("Could not spawn hero, changing spawn point")
+        random.shuffle(hero_config['route_points'], random.random)
+        for points in hero_config['route_points']:
+            # If already spawned, destroy it
+            try:
+                # Get the start and end points of the
+                self.start_point = carla.Transform(
+                    carla.Location(points[0][0], points[0][1], points[0][2]),
+                    carla.Rotation(points[0][4], points[0][5], points[0][3]),
+                )
+                self.end_point = carla.Transform(
+                    carla.Location(points[1][0], points[1][1], points[1][2]),
+                    carla.Rotation(points[1][4], points[1][5], points[1][3]),
+                )
+                self.hero = self.world.try_spawn_actor(
+                    self.hero_blueprints, self.start_point
+                )
+                if self.hero is not None:
+                    print("Hero spawned!")
+                    break
+                else:
+                    print("Could not spawn hero, changing spawn point")
+            except IndexError:
+                pass
 
         if self.hero is None:
             print("We ran out of spawn points")

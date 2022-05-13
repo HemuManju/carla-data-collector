@@ -348,3 +348,40 @@ def _compute_connection(current_waypoint, next_waypoint, threshold=35):
         return RoadOption.LEFT
     else:
         return RoadOption.RIGHT
+
+
+def _compute_modified_connection(
+    current_waypoint, next_waypoint, threshold=2, lane_threshold=20
+):
+    """
+    Compute the type of topological connection between an active waypoint (current_waypoint) and a target waypoint
+    (next_waypoint).
+
+    :param current_waypoint: active waypoint
+    :param next_waypoint: target waypoint
+    :return: the type of topological connection encoded as a RoadOption enum:
+             RoadOption.STRAIGHT
+             RoadOption.LEFT
+             RoadOption.RIGHT
+    """
+    if next_waypoint is not None:
+        n = next_waypoint.transform.rotation.yaw
+        n = n % 360.0
+
+        try:
+            c = current_waypoint.transform.rotation.yaw
+        except Exception as e:
+            c = current_waypoint.rotation.yaw
+        c = c % 360.0
+
+        diff_angle = (n - c) % 180.0
+        if diff_angle < threshold or diff_angle > (180 - threshold):
+            return RoadOption.STRAIGHT
+        elif diff_angle < lane_threshold or diff_angle > (180 - lane_threshold):
+            return RoadOption.LANEFOLLOW
+        elif diff_angle > 90.0:
+            return RoadOption.LEFT
+        else:
+            return RoadOption.RIGHT
+    else:
+        return RoadOption.VOID
