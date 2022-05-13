@@ -19,7 +19,7 @@ from agents.tools.misc import (
     get_acceleration,
 )
 
-from .local_planner import _compute_modified_connection
+from .local_planner import compute_modified_connection
 
 
 class BasicAgent(object):
@@ -88,13 +88,17 @@ class BasicAgent(object):
         return control
 
     def get_vehicle_data(self, control):
+
+        # Get location
+        location = self._vehicle.get_location()
+
         vehicle_data = {
             'throttle': control.throttle,
             'steer': control.steer,
             'brake': control.brake,
             'speed': get_speed(self._vehicle) / 3.6,
             'acceleration': get_acceleration(self._vehicle),
-            'position': None,  # TODO: Need to implement
+            'location': [location.x, location.y, location.z],
         }
         return vehicle_data
 
@@ -126,7 +130,7 @@ class BasicAgent(object):
             steps=0
         )
         current = self._vehicle.get_transform()
-        modified_direction = _compute_modified_connection(current, waypoint)
+        modified_direction = compute_modified_connection(current, waypoint)
         try:
             waypoint = [
                 waypoint.transform.location.x,

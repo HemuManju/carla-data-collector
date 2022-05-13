@@ -46,34 +46,41 @@ class AgentManager:
         self.server = server
         self.world = None
         self.steps = 0
+        self.behavior = 'normal'
 
         return None
 
     def setup_agent(self, behavior=None):
+        if behavior is not None:
+            self.behavior = behavior
+
+        # Reset the server
+        self.server.reset()
         # Get the vehicle and set the type
         hero = self.server.get_hero()
 
-        # Set the behavior type
-        if behavior is None:
-            self.agent = BasicAgent(
-                hero, target_speed=self.cfg['vehicle']['target_speed']
-            )
-        else:
-            self.agent = BehaviorAgent(hero, behavior=behavior)
-        return self.agent
+        # # Set the behavior type
+        # if behavior is None:
+        #     self.agent = BasicAgent(
+        #         hero, target_speed=self.cfg['vehicle']['target_speed']
+        #     )
+        # else:
+        self.agent = BehaviorAgent(hero, behavior=self.behavior)
 
-    def reset_agent(self):
-        self.server.reset()
-        self.agent.set_destination(self.server.core.end_point.location)
+        # Set final destination and starting point
+        self.agent.set_destination(
+            end_location=self.server.core.end_point.location,
+            start_location=self.server.core.start_point.location,
+        )
         return None
 
-    def collect_data(self, agent, pre_process=None):
-        control = agent.run_step()
+    def collect_data(self, pre_process=None):
+        control = self.agent.run_step()
 
         # Get different kinds of data
-        vehicle_data = agent.get_vehicle_data(control)
-        traffic_data = agent.get_traffic_data()
-        waypoint_data = agent.get_waypoint_data()
+        vehicle_data = self.agent.get_vehicle_data(control)
+        traffic_data = self.agent.get_traffic_data()
+        waypoint_data = self.agent.get_waypoint_data()
         sensor_data = self.server.step(control)
 
         if pre_process is not None:
@@ -130,7 +137,7 @@ class DataCollector:
             self.route_points.append([data[i], data[i + 1]])
         return None
 
-    def write_loop(self, file_name, agent):
+    def write_loop(self, file_name):
         # Create the tar file
         self.writer.create_tar_file(file_name, self.write_path)
 
@@ -138,15 +145,15 @@ class DataCollector:
         for i in range(steps):
 
             # Collect the data from agent
-            data = self.agent_manager.collect_data(agent, self.pre_process)
+            data = self.agent_manager.collect_data(self.pre_process)
 
             # Write data at regular intervals
             if i % self.cfg['data_writer']['data_write_freq'] == 0:
                 self.writer.write(data, i)
 
             # Reset if collision has happened
-            if data['collision'] or agent.done():
-                self.agent_manager.reset_agent()
+            if data['collision'] or self.agent_manager.agent.done():
+                self.agent_manager.setup_agent()
         return None
 
     def collect(self):
@@ -165,8 +172,7 @@ class DataCollector:
                 self.server.set_weather(weather)
 
                 # Setup the agent behavior
-                agent = self.agent_manager.setup_agent(behavior)
-                self.agent_manager.reset_agent()
+                self.agent_manager.setup_agent(behavior)
 
                 # Get the new file name
                 file_name = '_'.join(
@@ -174,7 +180,7 @@ class DataCollector:
                 )
 
                 # Run the simulation
-                self.write_loop(file_name, agent)
+                self.write_loop(file_name)
 
             # Finally close the writer
             self.writer.close()
@@ -201,13 +207,13 @@ class ParallelDataCollector:
         # Set the weather and agent behavior
         data_collector = DataCollector(self.cfg, self.write_path)
         data_collector.server.set_weather(weather)
-        agent, path_points = data_collector.agent_manager.setup_agent(behavior)
+        data_collector.agent_manager.setup_agent(behavior)
 
         # Get the new file name
         file_name = '_'.join([self.cfg['experiment']['town'], weather, behavior])
 
         # Run the simulation
-        data_collector.write_loop(file_name, agent, path_points)
+        data_collector.write_loop(file_name)
         data_collector.writer.close()
         data_collector.server.close()
         print('-' * 16 + 'Process Done' + '-' * 16)

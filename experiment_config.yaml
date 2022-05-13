@@ -8,8 +8,8 @@ carla_server:
   resolution_y: 600
   quality_level: 'Low'
   enable_map_assets: True
-  enable_rendering: True
-  show_display: True
+  enable_rendering: False
+  show_display: False
   carla_path: '/home/hemanth/Carla/CARLA_0.9.11'
 
 ##------------------Experiment config------------------##
@@ -29,13 +29,13 @@ experiment:
     tm_hybrid_mode: True
     seed: null
   town: 'Town01'
-  navigation_type: ['straight', 'one_curve', 'navigation']
+  navigation_type: ['one_curve', 'straight', 'navigation'] #
 
 ##------------------Vehicle config------------------##
 vehicle:
-  target_speed: 30 # Km/hr
+  target_speed: 20 # Km/hr
   agent: 'Behavior'
-  behavior: ['cautious'] # 'normal' 'cautious', 'aggressive'
+  behavior: ['cautious', 'normal'] #  'cautious', 'aggressive'
   blueprint: 'vehicle.lincoln.mkz2017'
   sensors:
     collision:
@@ -70,9 +70,9 @@ data_writer:
 
 ##------------------Collector config------------------##
 collector:
-  steps: 1000
-  data_write_path: '../../../Desktop/data/Town01/'
-  parallel_collect: False
+  steps: 300000
+  data_write_path: '../../../Desktop/carla_data/Town01/'
+  parallel_collect: True
   number_collectors: 4
 
 ##------------------Collector config------------------##

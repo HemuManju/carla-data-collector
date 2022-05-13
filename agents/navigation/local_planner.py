@@ -214,7 +214,6 @@ class LocalPlanner(object):
 
         for elem in current_plan:
             self._waypoints_queue.append(elem)
-
         self._stop_waypoint_creation = stop_waypoint_creation
 
     def run_step(self, debug=False):
@@ -350,7 +349,7 @@ def _compute_connection(current_waypoint, next_waypoint, threshold=35):
         return RoadOption.RIGHT
 
 
-def _compute_modified_connection(
+def compute_modified_connection(
     current_waypoint, next_waypoint, threshold=2, lane_threshold=20
 ):
     """

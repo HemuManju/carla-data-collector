@@ -49,6 +49,7 @@ class Summary:
             data.append(sample['json'])
 
         df = pd.DataFrame(data)
+        print(df.groupby('modified_direction').count())
         print(df.describe())
 
 

@@ -203,13 +203,17 @@ class CarlaCore:
         self.sensor_interface.destroy()
         self.world.tick()
 
+        # If already spawned, destroy it
+        if self.hero is not None:
+            self.hero.destroy()
+            self.hero = None
+
         self.hero_blueprints = self.world.get_blueprint_library().find(
             hero_config['blueprint']
         )
         self.hero_blueprints.set_attribute("role_name", "hero")
         random.shuffle(hero_config['route_points'], random.random)
         for points in hero_config['route_points']:
-            # If already spawned, destroy it
             try:
                 # Get the start and end points of the
                 self.start_point = carla.Transform(
