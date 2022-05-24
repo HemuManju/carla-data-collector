@@ -59,12 +59,7 @@ class AgentManager:
         # Get the vehicle and set the type
         hero = self.server.get_hero()
 
-        # # Set the behavior type
-        # if behavior is None:
-        #     self.agent = BasicAgent(
-        #         hero, target_speed=self.cfg['vehicle']['target_speed']
-        #     )
-        # else:
+        # Set the behavior type
         self.agent = BehaviorAgent(hero, behavior=self.behavior)
 
         # Set final destination and starting point
@@ -96,12 +91,17 @@ class AgentManager:
 
 
 class DataCollector:
-    def __init__(self, config, write_path):
+    def __init__(self, config, write_path, navigation_type=None):
         self.cfg = config
-        self.write_path = write_path
+        if navigation_type is None:
+            navigation_type = 'straight'
+        self.write_path = write_path + '/' + navigation_type + '/'
+
+        if navigation_type == 'navigation':
+            self.cfg['collector']['steps'] = 300000
 
         # Setup the route points
-        self.construct_route_points()
+        self.construct_route_points(navigation_type)
         self.cfg['vehicle']['route_points'] = self.route_points
 
         # Setup carla path and server
@@ -114,7 +114,7 @@ class DataCollector:
         self.writer = WebDatasetWriter(config=self.cfg)
 
         # Create a directory and save the configuration
-        create_directory(write_path)
+        create_directory(self.write_path)
 
         # Save the configuration
         client = self.agent_manager.server.get_client()
@@ -122,15 +122,11 @@ class DataCollector:
 
         return None
 
-    def construct_route_points(self):
-        dfs = []
-        for navigation in self.cfg['experiment']['navigation_type']:
-            dfs.append(
-                pd.read_xml(
-                    f'routes/corl2017/Town01_{navigation}.xml', xpath=".//waypoint"
-                )
-            )
-        data = pd.concat(dfs).values.tolist()
+    def construct_route_points(self, navigation_type):
+        df = pd.read_xml(
+            f'routes/corl2017/Town01_{navigation_type}.xml', xpath=".//waypoint"
+        )
+        data = df.values.tolist()
 
         self.route_points = []
         for i in range(0, len(data), 2):
@@ -202,10 +198,10 @@ class ParallelDataCollector:
         self.number_collector = number_collectors
         return None
 
-    def single_instance_collector(self, weather, behavior, semaphore):
+    def single_instance_collector(self, weather, behavior, navigation_type, semaphore):
 
         # Set the weather and agent behavior
-        data_collector = DataCollector(self.cfg, self.write_path)
+        data_collector = DataCollector(self.cfg, self.write_path, navigation_type)
         data_collector.server.set_weather(weather)
         data_collector.agent_manager.setup_agent(behavior)
 
@@ -226,13 +222,15 @@ class ParallelDataCollector:
             concurrency = self.number_collector
             semaphore = multiprocessing.Semaphore(concurrency)
             all_processes = []
-            for weather, behavior in itertools.product(
-                self.cfg['experiment']['weather'], self.cfg['vehicle']['behavior'],
+            for weather, behavior, navigation_type in itertools.product(
+                self.cfg['experiment']['weather'],
+                self.cfg['vehicle']['behavior'],
+                self.cfg['experiment']['navigation_type'],
             ):
                 semaphore.acquire()
                 p = multiprocessing.Process(
                     target=self.single_instance_collector,
-                    args=(weather, behavior, semaphore),
+                    args=(weather, behavior, navigation_type, semaphore),
                 )
                 all_processes.append(p)
                 p.start()
