@@ -81,7 +81,7 @@ class LocalPlanner(object):
         self._max_brake = 0.3
         self._max_steer = 0.8
         self._offset = 0
-        self._base_min_distance = 3.0
+        self._base_min_distance = 1.5
         self._follow_speed_limits = False
 
         # Overload parameters
@@ -237,11 +237,10 @@ class LocalPlanner(object):
         # Purge the queue of obsolete waypoints
         veh_location = self._vehicle.get_location()
         vehicle_speed = get_speed(self._vehicle) / 3.6
-        self._min_distance = self._base_min_distance + 0.5 * vehicle_speed
+        self._min_distance = self._base_min_distance + 0.15 * vehicle_speed
 
         num_waypoint_removed = 0
         for waypoint, _ in self._waypoints_queue:
-
             if len(self._waypoints_queue) - num_waypoint_removed == 1:
                 min_distance = 1  # Don't remove the last waypoint until very close by
             else:
@@ -275,6 +274,10 @@ class LocalPlanner(object):
 
         return control
 
+    def get_plan(self):
+        """Returns the current plan of the local planner"""
+        return self._waypoints_queue
+
     def get_incoming_waypoint_and_direction(self, steps=3):
         """
         Returns direction and waypoint at a distance ahead defined by the user.
@@ -290,6 +293,31 @@ class LocalPlanner(object):
                 return wpt, direction
             except IndexError as i:
                 return None, RoadOption.VOID
+
+    def get_waypoints_and_direction(self, steps=3):
+        """
+        Returns direction and waypoint at a distance ahead defined by the user.
+
+            :param steps: number of steps to get the incoming waypoint.
+        """
+        if len(self._waypoints_queue) > steps:
+            waypoints, directions = map(
+                list, zip(*list(self._waypoints_queue)[0:steps])
+            )
+            return waypoints, directions
+
+        else:
+            try:
+                waypoints, directions = map(list, zip(*list(self._waypoints_queue)))
+                current_length = len(waypoints)
+                for i in range(steps - current_length):
+                    waypoints.append(waypoints[-1])
+                    directions.append(directions[-1])
+
+                # wpt, direction = self._waypoints_queue[-1]
+                return waypoints, directions
+            except (IndexError, ValueError) as i:
+                return [None] * steps, [RoadOption.VOID] * steps
 
     def done(self):
         """

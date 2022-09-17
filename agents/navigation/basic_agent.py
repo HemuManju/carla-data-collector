@@ -21,6 +21,8 @@ from agents.tools.misc import (
 
 from .local_planner import compute_modified_connection
 
+from .utils import process_waypoints
+
 
 class BasicAgent(object):
     """
@@ -92,6 +94,10 @@ class BasicAgent(object):
         # Get location
         location = self._vehicle.get_location()
 
+        # Tranformation
+        vehicle_transform = self._vehicle.get_transform()
+        v_vec = vehicle_transform.get_forward_vector()
+
         vehicle_data = {
             'throttle': control.throttle,
             'steer': control.steer,
@@ -99,6 +105,7 @@ class BasicAgent(object):
             'speed': get_speed(self._vehicle) / 3.6,
             'acceleration': get_acceleration(self._vehicle),
             'location': [location.x, location.y, location.z],
+            'moving_direction': [v_vec.x, v_vec.y, 0.0],
         }
         return vehicle_data
 
@@ -125,23 +132,30 @@ class BasicAgent(object):
         }
         return traffic_data
 
+    def get_vehicle_collision_data(self):
+        collision_data = {
+            'vehicle_state': -1,
+            'dist_to_vehicle': -1,
+            'walker_state': -1,
+            'dist_to_walker': -1,
+        }
+        return collision_data
+
     def get_waypoint_data(self):
-        waypoint, direction = self._local_planner.get_incoming_waypoint_and_direction(
-            steps=0
-        )
+        waypoints, directions = self._local_planner.get_waypoints_and_direction(steps=5)
         current = self._vehicle.get_transform()
-        modified_direction = compute_modified_connection(current, waypoint)
-        try:
-            waypoint = [
-                waypoint.transform.location.x,
-                waypoint.transform.location.y,
-                waypoint.transform.rotation.yaw,
-            ]
-        except AttributeError:
-            waypoint = [0, 0, 0]
+
+        # Convert to list
+        if not isinstance(waypoints, list):
+            waypoints = [waypoints]
+            directions = [directions]
+
+        modified_direction = compute_modified_connection(current, waypoints[0])
+        processed_waypoints = process_waypoints(waypoints, current)
+
         waypoint_data = {
-            'waypoint': waypoint,
-            'direction': direction.value,
+            'waypoints': processed_waypoints,
+            'direction': directions[0].value,
             'modified_direction': modified_direction.value,
         }
 

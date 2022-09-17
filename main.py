@@ -7,12 +7,15 @@ from modules.data_reader import WebDatasetReader, Summary
 
 from utils import skip_run, find_tar_files
 
+
 # Run the simulation
 kill_all_servers()
 config = yaml.load(open('experiment_config.yaml'), Loader=yaml.SafeLoader)
 
-with skip_run('skip', 'collect_data') as check, check():
-    collector = DataCollector(config, write_path='../../../Desktop/data/')
+with skip_run('run', 'collect_data') as check, check():
+    collector = DataCollector(
+        config, write_path='../../../Desktop/data/', navigation_type='one_curve'
+    )
     collector.collect()
 
 with skip_run('skip', 'parallel_collect_data') as check, check():
@@ -24,11 +27,11 @@ with skip_run('skip', 'parallel_collect_data') as check, check():
 with skip_run('skip', 'read_data') as check, check():
     reader = WebDatasetReader(
         config=None,
-        file_path='/home/hemanth/Desktop/data/Town01_ClearNoon_normal_000000.tar',
+        file_path='/home/hemanth/Desktop/CARLA/carla_data/Town01_NAVIGATION/one_curve/Town01_ClearNoon_cautious_000000.tar',
     )
     reader.create_movie()
 
-with skip_run('run', 'summary_data') as check, check():
+with skip_run('skip', 'summary_data') as check, check():
     paths = find_tar_files(config['reader']['data_read_path'], pattern='')
     reader = WebDatasetReader(config=None, file_path=paths)
     samples = reader.get_dataset()

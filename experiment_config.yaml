@@ -7,24 +7,27 @@ carla_server:
   resolution_x: 600
   resolution_y: 600
   quality_level: 'Low'
-  enable_map_assets: True
+  enable_map_assets: False
   enable_rendering: False
   show_display: False
   carla_path: '/home/hemanth/Carla/CARLA_0.9.11'
+  debug: True
 
 ##------------------Experiment config------------------##
+available_weathers: [
+    'MidRainSunset', # done
+    'ClearNoon', # done
+    'SoftRainNoon', # done
+    'HardRainNoon',
+    'ClearSunset', # Testing
+    'SoftRainSunset',
+    'HardRainSunset', # Testing
+  ]
 experiment:
-  weather: [
-      'ClearNoon',
-      # 'SoftRainNoon',
-      'HardRainNoon',
-      'ClearSunset',
-      # 'SoftRainSunset',
-      'HardRainSunset',
-    ]
+  weather: ['HardRainNoon', 'SoftRainSunset']
   background_activity:
-    n_vehicles: 20
-    n_walkers: 10
+    n_vehicles: 50
+    n_walkers: 50
     tm_hybrid_mode: True
     seed: null
   town: 'Town01'
@@ -33,8 +36,9 @@ experiment:
 ##------------------Vehicle config------------------##
 vehicle:
   target_speed: 20 # Km/hr
+  ignore_traffic_lights: False
   agent: 'Behavior'
-  behavior: ['cautious', 'normal'] #  'cautious', 'aggressive'
+  behavior: ['cautious'] #  'cautious', 'aggressive'
   blueprint: 'vehicle.lincoln.mkz2017'
   sensors:
     collision:
@@ -53,9 +57,9 @@ vehicle:
     #   transform: '1.25,0,1.85,-90,0,0'
     rgb:
       type: 'sensor.camera.rgb'
-      image_size_x: 256
-      image_size_y: 256
-      transform: '1.25,0,1.85,0,0,0'
+      image_size_x: 128
+      image_size_y: 128
+      transform: '1.25,0,1.85,-90,0,0'
   sensors_process:
     normalized: True
     gray_scale: True
@@ -72,11 +76,11 @@ collector:
   steps: 150000
   data_write_path: '../../../Desktop/carla_data/Town01_NAVIGATION/'
   parallel_collect: True
-  number_collectors: 6
+  number_collectors: 3
 
 ##------------------Collector config------------------##
 reader:
-  data_read_path: '../../../Desktop/carla_data/Town01_NAVIGATION/'
+  data_read_path: '../../../Desktop/carla_data/Town01_NAVIGATION/straight/'
   create_movie: True
 
 ##------------------Simulation config------------------##

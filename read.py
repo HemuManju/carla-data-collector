@@ -23,6 +23,6 @@ if __name__ == '__main__':
 
     try:
         paths = find_tar_files(config['reader']['data_read_path'], pattern='')
-        main(config, file_path=paths)
+        main(config, file_path=paths[0])
     except KeyboardInterrupt:
         print('\nCancelled by user. Bye!')

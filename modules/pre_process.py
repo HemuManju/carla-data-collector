@@ -13,6 +13,7 @@ class PreProcessData:
         sensor_data,
         waypoint_data,
         traffic_data,
+        collision_data,
         vehicle_data=-1,
         other_data={'other_data': -1},
     ):
@@ -37,6 +38,7 @@ class PreProcessData:
             **waypoint_data,
             **traffic_data,
             **vehicle_data,
+            **collision_data,
             **other_data,
         }
         return data

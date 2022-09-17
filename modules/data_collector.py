@@ -6,7 +6,6 @@ import itertools
 import json
 
 import multiprocessing
-
 import pandas as pd
 
 from core.carla_core import kill_all_servers
@@ -60,7 +59,9 @@ class AgentManager:
         hero = self.server.get_hero()
 
         # Set the behavior type
-        self.agent = BehaviorAgent(hero, behavior=self.behavior)
+        self.agent = BehaviorAgent(
+            hero, opt_dict=self.cfg['vehicle'], behavior=self.behavior
+        )
 
         # Set final destination and starting point
         self.agent.set_destination(
@@ -76,6 +77,7 @@ class AgentManager:
         vehicle_data = self.agent.get_vehicle_data(control)
         traffic_data = self.agent.get_traffic_data()
         waypoint_data = self.agent.get_waypoint_data()
+        collision_data = self.agent.get_vehicle_collision_data()
         sensor_data = self.server.step(control)
 
         if pre_process is not None:
@@ -84,9 +86,16 @@ class AgentManager:
                 waypoint_data,
                 vehicle_data=vehicle_data,
                 traffic_data=traffic_data,
+                collision_data=collision_data,
             )
         else:
-            data = {**sensor_data, **waypoint_data, **traffic_data, **vehicle_data}
+            data = {
+                **sensor_data,
+                **waypoint_data,
+                **traffic_data,
+                **vehicle_data,
+                **collision_data,
+            }
         return data
 
 

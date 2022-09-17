@@ -2,6 +2,8 @@
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
+
+
 """
 This module provides GlobalRoutePlanner implementation.
 """
@@ -284,7 +286,9 @@ class GlobalRoutePlanner(object):
                     next_waypoint, next_road_option, next_segment = None, None, None
 
                     if (
-                        waypoint.right_lane_marking.lane_change & carla.LaneChange.Right
+                        waypoint.right_lane_marking
+                        and waypoint.right_lane_marking.lane_change
+                        & carla.LaneChange.Right
                         and not right_found
                     ):
                         next_waypoint = waypoint.get_right_lane()
@@ -312,7 +316,9 @@ class GlobalRoutePlanner(object):
                                 )
                                 right_found = True
                     if (
-                        waypoint.left_lane_marking.lane_change & carla.LaneChange.Left
+                        waypoint.left_lane_marking
+                        and waypoint.left_lane_marking.lane_change
+                        & carla.LaneChange.Left
                         and not left_found
                     ):
                         next_waypoint = waypoint.get_left_lane()
