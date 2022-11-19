@@ -93,6 +93,7 @@ class BasicAgent(object):
 
         # Get location
         location = self._vehicle.get_location()
+        velocity = self._vehicle.get_velocity()
 
         # Tranformation
         vehicle_transform = self._vehicle.get_transform()
@@ -106,6 +107,7 @@ class BasicAgent(object):
             'acceleration': get_acceleration(self._vehicle),
             'location': [location.x, location.y, location.z],
             'moving_direction': [v_vec.x, v_vec.y, 0.0],
+            'velocity': [velocity.x, velocity.y, 0],
         }
         return vehicle_data
 

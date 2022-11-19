@@ -1,21 +1,40 @@
 import os
 import json
+import jsonpickle
+import jsonpickle.ext.numpy as jsonpickle_numpy
+
+
+import numpy as np
 
 from PIL import Image as im
-
+import matplotlib.pyplot as plt
 import webdataset as wds
 
-from utils import get_nonexistant_shard_path, get_nonexistant_path
+from utils import (
+    get_nonexistant_shard_path,
+    get_nonexistant_path,
+    labels_to_cityscapes_palette,
+)
+
+
+def default(obj):
+    if type(obj).__module__ == np.__name__:
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return obj.item()
+    raise TypeError('Unknown type:', type(obj))
 
 
 class WebDatasetWriter:
     def __init__(self, config) -> None:
         self.cfg = config
         self.sink = None
+        jsonpickle_numpy.register_handlers()
 
     def _is_jsonable(self, x):
         try:
-            json.dumps(x)
+            json.dumps(x, default=default)
             return True
         except (TypeError, OverflowError):
             return False
@@ -51,12 +70,14 @@ class WebDatasetWriter:
         image_data = im.fromarray(data['rgb'])
         del data['rgb']  # No longer needed
 
-        # Find only serializable data
-        remaining_data = self._get_serializable_data(data)
+        # Semseg data
+        data['semseg'] = data['semseg'][:, :, 0].flatten().tolist()
+        encoded_data = jsonpickle.encode(data)
+
         return {
             "__key__": "sample%06d" % index,
             'jpeg': image_data,
-            'json': remaining_data,
+            'json': encoded_data,
         }
 
     def write(self, data, index):

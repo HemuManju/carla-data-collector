@@ -15,23 +15,30 @@ carla_server:
 
 ##------------------Experiment config------------------##
 available_weathers: [
-    'MidRainSunset', # done
-    'ClearNoon', # done
-    'SoftRainNoon', # done
-    'HardRainNoon',
-    'ClearSunset', # Testing
-    'SoftRainSunset',
+    'MidRainSunset', # Done
+    'ClearNoon', # Done
+    'SoftRainNoon', # Done
+    'HardRainNoon', # Testing (Done)
+    'ClearSunset', # Testing (not done)
+    'SoftRainSunset', # Done
     'HardRainSunset', # Testing
   ]
 experiment:
-  weather: ['HardRainNoon', 'SoftRainSunset']
+  weather:
+    [
+      'HardRainSunset',
+      'ClearNoon',
+      'SoftRainNoon',
+      'SoftRainSunset',
+      'HardRainNoon',
+    ]
   background_activity:
     n_vehicles: 50
-    n_walkers: 50
+    n_walkers: 20
     tm_hybrid_mode: True
     seed: null
   town: 'Town01'
-  navigation_type: ['one_curve', 'straight', 'navigation'] #
+  navigation_type: ['navigation'] # 'straight'
 
 ##------------------Vehicle config------------------##
 vehicle:
@@ -45,20 +52,22 @@ vehicle:
       type: 'sensor.other.collision'
     imu:
       type: 'sensor.other.imu'
+    gnss:
+      type: 'sensor.other.gnss'
     obstacle:
       type: 'sensor.other.obstacle'
       distance: 5
       hit_radius: 0.5
       only_dynamics: True
-    # semseg:
-    #   type: 'sensor.camera.semantic_segmentation'
-    #   image_size_x: 256
-    #   image_size_y: 256
-    #   transform: '1.25,0,1.85,-90,0,0'
+    semseg:
+      type: 'sensor.camera.semantic_segmentation'
+      image_size_x: 256
+      image_size_y: 256
+      transform: '1.25,0,1.85,-90,0,0'
     rgb:
       type: 'sensor.camera.rgb'
-      image_size_x: 128
-      image_size_y: 128
+      image_size_x: 256
+      image_size_y: 256
       transform: '1.25,0,1.85,-90,0,0'
   sensors_process:
     normalized: True
