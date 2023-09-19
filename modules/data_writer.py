@@ -89,3 +89,33 @@ class WebDatasetWriter:
 
     def close(self):
         self.sink.close()
+
+
+class AutoEncoderDatasetWriter(WebDatasetWriter):
+    def __init__(self, config) -> None:
+        super().__init__(config)
+
+    def sample(self, data, index):
+        image_front = im.fromarray(data['rgb_front'])
+        del data['rgb_front']  # No longer needed
+
+        image_back = im.fromarray(data['rgb_back'])
+        del data['rgb_back']  # No longer needed
+
+        image_right = im.fromarray(data['rgb_right'])
+        del data['rgb_right']  # No longer needed
+
+        image_left = im.fromarray(data['rgb_left'])
+        del data['rgb_left']  # No longer needed
+
+        # Other data
+        encoded_data = jsonpickle.encode(data)
+
+        return {
+            "__key__": "sample%06d" % index,
+            'front.jpeg': image_front,
+            'back.jpeg': image_back,
+            'right.jpeg': image_right,
+            'left.jpeg': image_left,
+            'json': encoded_data,
+        }

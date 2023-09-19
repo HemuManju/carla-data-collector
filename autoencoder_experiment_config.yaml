@@ -59,13 +59,23 @@ vehicle:
       distance: 5
       hit_radius: 0.5
       only_dynamics: True
-    rgb:
+    rgb_front:
       type: 'sensor.camera.rgb'
       image_size_x: 256
       image_size_y: 256
       transform: '1.25,0,1.85,-90,0,0'
-    semseg:
-      type: 'sensor.camera.semantic_segmentation'
+    rgb_back:
+      type: 'sensor.camera.rgb'
+      image_size_x: 256
+      image_size_y: 256
+      transform: '1.25,0,1.85,-90,0,180'
+    rgb_right:
+      type: 'sensor.camera.rgb'
+      image_size_x: 256
+      image_size_y: 256
+      transform: '1.25,0,1.85,-90,0,0'
+    rgb_left:
+      type: 'sensor.camera.rgb'
       image_size_x: 256
       image_size_y: 256
       transform: '1.25,0,1.85,-90,0,0'

@@ -9,6 +9,7 @@ from core.carla_core import kill_all_servers
 
 from modules.data_collector import DataCollector, ParallelDataCollector
 from modules.data_reader import WebDatasetReader, Summary
+from modules.data_writer import AutoEncoderDatasetWriter
 
 from utils import skip_run, find_tar_files, show_image, labels_to_cityscapes_palette
 
@@ -18,10 +19,24 @@ kill_all_servers()
 config = yaml.load(open('experiment_config.yaml'), Loader=yaml.SafeLoader)
 
 with skip_run('skip', 'collect_data') as check, check():
+    writer = AutoEncoderDatasetWriter(config)
     collector = DataCollector(
-        config, write_path='../../../Desktop/data/', navigation_type='one_curve'
+        config,
+        write_path='/home/hemanth/Desktop/carla-data-test/',
+        navigation_type='one_curve',
+        writer=writer,
     )
-    collector.collect()
+    collector.collect(single_scenario=True)
+
+with skip_run('run', 'collect_data') as check, check():
+    config['experiment']['town'] = 'Town01'
+    collector = DataCollector(
+        config,
+        write_path='/home/hemanth/Desktop/carla-data-test/',
+        navigation_type='straight',
+    )
+    collector.collect(single_scenario=True)
+
 
 with skip_run('skip', 'parallel_collect_data') as check, check():
     collector = ParallelDataCollector(
@@ -29,7 +44,7 @@ with skip_run('skip', 'parallel_collect_data') as check, check():
     )
     collector.collect()
 
-with skip_run('run', 'read_data') as check, check():
+with skip_run('skip', 'read_data') as check, check():
     reader = WebDatasetReader(
         config=None,
         file_path='/home/hemanth/Desktop/data/one_curve/Town01_HardRainSunset_cautious_000000.tar',
@@ -39,6 +54,7 @@ with skip_run('run', 'read_data') as check, check():
     for data in dataset:
         print(data['json']['gnss']['values'])
         print(data['json']['velocity'])
+        print(data['front.jpeg'])
         break
         test = np.array(data['json']['semseg']).reshape(256, 256)
         t = labels_to_cityscapes_palette(test)

@@ -100,7 +100,7 @@ class AgentManager:
 
 
 class DataCollector:
-    def __init__(self, config, write_path, navigation_type=None):
+    def __init__(self, config, write_path, navigation_type=None, writer=None):
         self.cfg = config
         if navigation_type is None:
             navigation_type = 'straight'
@@ -110,7 +110,7 @@ class DataCollector:
             self.cfg['collector']['steps'] = 300000
 
         # Setup the route points
-        self.construct_route_points(navigation_type)
+        self.construct_route_points(self.cfg['experiment']['town'], navigation_type)
         self.cfg['vehicle']['route_points'] = self.route_points
 
         # Setup carla path and server
@@ -120,7 +120,12 @@ class DataCollector:
         # Setup agent, writer and preprocessor
         self.agent_manager = AgentManager(config=self.cfg, server=self.server)
         self.pre_process = PreProcessData(config=self.cfg)
-        self.writer = WebDatasetWriter(config=self.cfg)
+
+        # Writer
+        if writer is None:
+            self.writer = WebDatasetWriter(config=self.cfg)
+        else:
+            self.writer = writer
 
         # Create a directory and save the configuration
         create_directory(self.write_path)
@@ -131,10 +136,12 @@ class DataCollector:
 
         return None
 
-    def construct_route_points(self, navigation_type):
+    def construct_route_points(self, town, navigation_type):
+        print(f'routes/corl2017/{town}_{navigation_type}.xml')
         df = pd.read_xml(
-            f'routes/corl2017/Town01_{navigation_type}.xml', xpath=".//waypoint"
+            f'routes/corl2017/{town}_{navigation_type}.xml', xpath=".//waypoint"
         )
+
         data = df.values.tolist()
 
         self.route_points = []
@@ -142,13 +149,12 @@ class DataCollector:
             self.route_points.append([data[i], data[i + 1]])
         return None
 
-    def write_loop(self, file_name):
+    def write_loop(self, file_name, single_scenario):
         # Create the tar file
         self.writer.create_tar_file(file_name, self.write_path)
 
         steps = self.cfg['collector']['steps']
         for i in range(steps):
-
             # Collect the data from agent
             data = self.agent_manager.collect_data(self.pre_process)
 
@@ -159,9 +165,13 @@ class DataCollector:
             # Reset if collision has happened
             if data['collision'] or self.agent_manager.agent.done():
                 self.agent_manager.setup_agent()
+
+            if single_scenario and self.agent_manager.agent.done():
+                break
+
         return None
 
-    def collect(self):
+    def collect(self, single_scenario=False):
         """
         Main loop of the simulation. It handles updating all the HUD information,
         ticking the agent.
@@ -185,7 +195,7 @@ class DataCollector:
                 )
 
                 # Run the simulation
-                self.write_loop(file_name)
+                self.write_loop(file_name, single_scenario)
 
             # Finally close the writer
             self.writer.close()
@@ -208,7 +218,6 @@ class ParallelDataCollector:
         return None
 
     def single_instance_collector(self, weather, behavior, navigation_type, semaphore):
-
         # Set the weather and agent behavior
         data_collector = DataCollector(self.cfg, self.write_path, navigation_type)
         data_collector.server.set_weather(weather)
