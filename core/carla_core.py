@@ -212,27 +212,35 @@ class CarlaCore:
             hero_config['blueprint']
         )
         self.hero_blueprints.set_attribute("role_name", "hero")
-        random.shuffle(hero_config['route_points'], random.random)
+
+        try:
+            random.shuffle(hero_config['route_points'], random.random)
+        except KeyError:
+            hero_config['route_points'] = self.map.get_spawn_points()
+
         for points in hero_config['route_points']:
             try:
-                # Get the start and end points of the
-                self.start_point = carla.Transform(
-                    carla.Location(points[0][0], points[0][1], points[0][2]),
-                    carla.Rotation(points[0][4], points[0][5], points[0][3]),
-                )
-                self.end_point = carla.Transform(
-                    carla.Location(points[1][0], points[1][1], points[1][2]),
-                    carla.Rotation(points[1][4], points[1][5], points[1][3]),
-                )
-                self.hero = self.world.try_spawn_actor(
-                    self.hero_blueprints, self.start_point
-                )
+                if not isinstance(points, carla.Transform):
+                    # Get the start and end points of the
+                    self.start_point = carla.Transform(
+                        carla.Location(points[0][0], points[0][1], points[0][2]),
+                        carla.Rotation(points[0][4], points[0][5], points[0][3]),
+                    )
+                    self.end_point = carla.Transform(
+                        carla.Location(points[1][0], points[1][1], points[1][2]),
+                        carla.Rotation(points[1][4], points[1][5], points[1][3]),
+                    )
+                    self.hero = self.world.try_spawn_actor(
+                        self.hero_blueprints, self.start_point
+                    )
+                else:
+                    self.hero = self.world.try_spawn_actor(self.hero_blueprints, points)
                 if self.hero is not None:
                     print("Hero spawned!")
                     break
                 else:
                     print("Could not spawn hero, changing spawn point")
-            except IndexError:
+            except (IndexError, TypeError):
                 pass
 
         if self.hero is None:

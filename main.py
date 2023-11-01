@@ -1,4 +1,8 @@
+import os
 import yaml
+
+from datetime import date
+
 import torch
 import numpy as np
 from torchvision.transforms import Resize
@@ -10,6 +14,9 @@ from core.carla_core import kill_all_servers
 from modules.data_collector import DataCollector, ParallelDataCollector
 from modules.data_reader import WebDatasetReader, Summary
 from modules.data_writer import AutoEncoderDatasetWriter
+
+from core.carla_env import CarlaEnv
+from experiments.flair_experiment import FrontRGBContinuousExperiment
 
 from utils import skip_run, find_tar_files, show_image, labels_to_cityscapes_palette
 
@@ -28,15 +35,14 @@ with skip_run('skip', 'collect_data') as check, check():
     )
     collector.collect(single_scenario=True)
 
-with skip_run('run', 'collect_data') as check, check():
+with skip_run('skip', 'collect_data') as check, check():
     config['experiment']['town'] = 'Town01'
     collector = DataCollector(
         config,
         write_path='/home/hemanth/Desktop/carla-data-test/',
-        navigation_type='straight',
+        navigation_type='navigation',
     )
     collector.collect(single_scenario=True)
-
 
 with skip_run('skip', 'parallel_collect_data') as check, check():
     collector = ParallelDataCollector(
@@ -71,3 +77,18 @@ with skip_run('skip', 'summary_data') as check, check():
 
     summary = Summary(config=None)
     summary.summarize(samples)
+
+with skip_run('skip', 'carla_gym_env') as check, check():
+    cfg = yaml.load(open('carla_env.yaml'), Loader=yaml.SafeLoader)
+    cfg['logs_path'] = cfg['logs_path'] + str(date.today()) + '/FLAIR'
+
+    # Setup carla path
+    os.environ["CARLA_ROOT"] = "/home/hemanth/Carla/CARLA_0.9.11"
+
+    cfg['env_config']['experiment']['type'] = FrontRGBContinuousExperiment
+    env = CarlaEnv(cfg['env_config'])
+
+    for i in range(1000):
+        # [throttle, steer, brake]
+        # Replace with any agent
+        env.step([0, 0, 0])

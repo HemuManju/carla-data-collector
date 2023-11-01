@@ -1,0 +1,99 @@
+# Neural Network Parameters
+latent_size: 128
+rnn_input_size: 128
+hidden_size: 128
+layers_encoder: null
+layers_decoder: null
+gru_input_size: 2
+gru_hidden_size: 64
+image_size: [1, 256, 256]
+image_resize: [1, 256, 256]
+n_waypoints: 2
+seq_length: 3
+
+# Learning Parameters
+env_config:
+  carla_server:
+    host: 'localhost'
+    timeout: 2.0
+    timestep: 0.1
+    retries_on_error: 25
+    resolution_x: 600
+    resolution_y: 600
+    quality_level: 'Low'
+    enable_map_assets: True
+    enable_rendering: True
+    show_display: True
+
+  experiment:
+    repeat_action: 0
+    constraints:
+      desired_speed: 30 # Km/hr
+
+    type: []
+    hero:
+      blueprint: 'vehicle.lincoln.mkz2017'
+      sensors:
+        collision:
+          type: 'sensor.other.collision'
+        rgb:
+          type: 'sensor.camera.rgb'
+          image_size_x: 256
+          image_size_y: 256
+          transform: '1.25,0,1.85,-90,0,0'
+        imu:
+          type: 'sensor.other.imu'
+        gnss:
+          type: 'sensor.other.gnss'
+
+      sensors_process:
+        normalized: True
+        gray_scale: True
+      spawn_points: []
+    background_activity:
+      n_vehicles: 20
+      n_walkers: 10
+      tm_hybrid_mode: True
+      seed: 1337
+    town: 'Town01'
+    weather: ['ClearNoon'] # Give it as a list
+    others:
+      seq_length: 3
+      max_time_idle: 200
+      max_time_episode: 6400
+
+    # Other parameters
+    seq_length: 3
+    image_size: [1, 256, 256]
+    image_resize: [1, 256, 256]
+    crop: False
+    crop_image_resize: [1, 64, 128]
+    alpha: 0.75
+    beta: 0.1
+    normalize_kalman: True
+    clip_kalman: True
+    max_position: 400
+    max_velocity: 20
+
+# Learning Parameters
+learning:
+  n_actions: 9
+  obs_size: 4
+  latent_size: 128
+  rnn_input_size: 128
+  hidden_size: 128
+  layers_encoder: null
+  layers_decoder: null
+  gru_input_size: 2
+  gru_hidden_size: 64
+  image_size: [1, 256, 256]
+  image_resize: [1, 256, 256]
+  n_waypoints: 2
+  seq_length: 3
+
+# Log Parameters
+logs_path: 'logs/'
+restore: False
+overwrite: False
+name: null
+training_seed: 1337
