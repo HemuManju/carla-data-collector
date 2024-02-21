@@ -4,8 +4,9 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 """ This module contains PID controllers to perform lateral and longitudinal control. """
 
-from collections import deque
 import math
+from collections import deque
+
 import numpy as np
 
 try:

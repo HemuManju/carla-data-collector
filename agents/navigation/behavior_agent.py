@@ -6,16 +6,16 @@
 waypoints and avoiding other vehicles. The agent also responds to traffic lights,
 traffic signs, and has different possible configurations. """
 
-import random
-import numpy as np
+
 import carla
+import numpy as np
 from shapely.geometry import Polygon
 
 from agents.navigation.basic_agent import BasicAgent
+from agents.navigation.behavior_types import Aggressive, Cautious, Normal
 from agents.navigation.local_planner import RoadOption
-from agents.navigation.behavior_types import Cautious, Aggressive, Normal
-
-from agents.tools.misc import get_speed, positive, is_within_distance, compute_distance
+from agents.tools.misc import (compute_distance, get_speed, is_within_distance,
+                               positive)
 
 
 class BehaviorAgent(BasicAgent):

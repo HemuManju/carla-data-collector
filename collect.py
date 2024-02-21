@@ -1,9 +1,7 @@
 import yaml
 
 from core.carla_core import kill_all_servers
-
 from modules.data_collector import DataCollector, ParallelDataCollector
-
 
 # Run the simulation
 kill_all_servers()

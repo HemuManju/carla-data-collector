@@ -1,24 +1,19 @@
-import random
-import os
-from tqdm import tqdm
 import itertools
-
 import json
-
 import multiprocessing
-import pandas as pd
+import os
 
-from core.carla_core import kill_all_servers
-from core.helper import inspect
+import pandas as pd
+from tqdm import tqdm
 
 from agents.navigation.behavior_agent import BehaviorAgent
-from agents.navigation.basic_agent import BasicAgent
+from core.carla_core import kill_all_servers
+from core.helper import inspect
+from utils import create_directory
 
 from .carla_server import CarlaServer
-from .pre_process import PreProcessData
 from .data_writer import WebDatasetWriter
-
-from utils import create_directory
+from .pre_process import PreProcessData
 
 
 def save_configuration(config, client, write_path):

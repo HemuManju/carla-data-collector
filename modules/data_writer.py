@@ -1,20 +1,12 @@
-import os
 import json
+
 import jsonpickle
 import jsonpickle.ext.numpy as jsonpickle_numpy
-
-
 import numpy as np
-
-from PIL import Image as im
-import matplotlib.pyplot as plt
 import webdataset as wds
+from PIL import Image as im
 
-from utils import (
-    get_nonexistant_shard_path,
-    get_nonexistant_path,
-    labels_to_cityscapes_palette,
-)
+from utils import (get_nonexistant_path, get_nonexistant_shard_path)
 
 
 def default(obj):

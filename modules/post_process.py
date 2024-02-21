@@ -1,5 +1,5 @@
-import numpy as np
 import imageio as iio
+import numpy as np
 
 from utils import get_nonexistant_path
 

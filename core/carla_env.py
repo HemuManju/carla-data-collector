@@ -9,6 +9,7 @@
 from __future__ import print_function
 
 import gym
+
 from .carla_core import CarlaCore
 
 

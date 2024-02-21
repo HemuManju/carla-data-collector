@@ -10,17 +10,13 @@ It can also make use of the global route planner to follow a specifed route
 
 import carla
 
-from agents.navigation.local_planner import LocalPlanner
 from agents.navigation.global_route_planner import GlobalRoutePlanner
-from agents.tools.misc import (
-    get_speed,
-    is_within_distance,
-    get_trafficlight_trigger_location,
-    get_acceleration,
-)
+from agents.navigation.local_planner import LocalPlanner
+from agents.tools.misc import (get_acceleration, get_speed,
+                               get_trafficlight_trigger_location,
+                               is_within_distance)
 
 from .local_planner import compute_modified_connection
-
 from .utils import process_waypoints
 
 

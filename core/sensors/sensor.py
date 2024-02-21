@@ -11,6 +11,7 @@ Here are defined all the CARLA sensors
 
 import copy
 import math
+
 import numpy as np
 
 try:

@@ -6,22 +6,23 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
+import logging
 import os
 import random
 import signal
 import subprocess
 import time
+
 import psutil
-import logging
 
 try:
     import carla
 except ModuleNotFoundError:
     pass
 
-from .sensors.sensor_interface import SensorInterface
-from .sensors.factory import SensorFactory
 from .helper import join_dicts
+from .sensors.factory import SensorFactory
+from .sensors.sensor_interface import SensorInterface
 
 BASE_CORE_CONFIG = {
     "host": "localhost",  # Client host

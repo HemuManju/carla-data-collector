@@ -7,12 +7,13 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import glob
-import os
 import hashlib
 import math
-import pygame
+import os
 import time
 from threading import Thread
+
+import pygame
 
 try:
     import carla
@@ -439,7 +440,6 @@ class MapImage(object):
                         and l.lane_type != carla.LaneType.Driving
                         and not l.is_junction
                     ):
-
                         if l.lane_type == carla.LaneType.Shoulder:
                             shoulder[0].append(l)
 
@@ -458,7 +458,6 @@ class MapImage(object):
                         and r.lane_type != carla.LaneType.Driving
                         and not r.is_junction
                     ):
-
                         if r.lane_type == carla.LaneType.Shoulder:
                             shoulder[1].append(r)
 
@@ -506,10 +505,10 @@ class MapImage(object):
 
         # Find and Draw Traffic Signs: Stops and Yields
         font_size = self.world_to_pixel_width(1)
-        font = pygame.font.SysFont('Arial', font_size, True)
+        font = pygame.font.SysFont("Arial", font_size, True)
 
-        stops = [actor for actor in actors if 'stop' in actor.type_id]
-        yields = [actor for actor in actors if 'yield' in actor.type_id]
+        stops = [actor for actor in actors if "stop" in actor.type_id]
+        yields = [actor for actor in actors if "yield" in actor.type_id]
 
         stop_font_surface = font.render("STOP", False, COLOR_ALUMINIUM_2)
         stop_font_surface = pygame.transform.scale(
@@ -595,13 +594,13 @@ class BirdviewSensor(object):
         walkers = []
 
         for actor in self.world.get_actors():
-            if 'vehicle' in actor.type_id:
+            if "vehicle" in actor.type_id:
                 vehicles.append(actor)
-            elif 'walker.pedestrian' in actor.type_id:
+            elif "walker.pedestrian" in actor.type_id:
                 walkers.append((actor))
-            elif 'traffic_light' in actor.type_id:
+            elif "traffic_light" in actor.type_id:
                 traffic_lights.append(actor)
-            elif 'speed_limit' in actor.type_id:
+            elif "speed_limit" in actor.type_id:
                 speed_limits.append(actor)
 
         return (vehicles, traffic_lights, speed_limits, walkers)
@@ -632,10 +631,9 @@ class BirdviewSensor(object):
 
         font_size = self.map_image.world_to_pixel_width(2)
         radius = self.map_image.world_to_pixel_width(2)
-        font = pygame.font.SysFont('Arial', font_size)
+        font = pygame.font.SysFont("Arial", font_size)
 
         for sl in speed_limits:
-
             x, y = self.map_image.world_to_pixel(sl.get_location())
 
             # Render speed limit concentric circles
@@ -644,7 +642,7 @@ class BirdviewSensor(object):
             pygame.draw.circle(surface, COLOR_SCARLET_RED_1, (x, y), radius)
             pygame.draw.circle(surface, COLOR_ALUMINIUM_0, (x, y), white_circle_radius)
 
-            limit = sl.type_id.split('.')[2]
+            limit = sl.type_id.split(".")[2]
             font_surface = font.render(limit, True, COLOR_ALUMINIUM_5)
             font_surface = pygame.transform.rotate(font_surface, -angle)
             offset = font_surface.get_rect(center=(x, y))
@@ -672,9 +670,9 @@ class BirdviewSensor(object):
         """Renders the vehicles' bounding boxes"""
         for v in list_v:
             color = COLOR_SKY_BLUE_0
-            if int(v.attributes['number_of_wheels']) == 2:
+            if int(v.attributes["number_of_wheels"]) == 2:
                 color = COLOR_CHOCOLATE_1
-            if v.attributes['role_name'] == 'hero':
+            if v.attributes["role_name"] == "hero":
                 color = COLOR_CHAMELEON_0
             # Compute bounding box points
             bb = v.bounding_box.extent

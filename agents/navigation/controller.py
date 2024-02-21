@@ -4,10 +4,12 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 """ This module contains PID controllers to perform lateral and longitudinal control. """
 
-from collections import deque
 import math
-import numpy as np
+from collections import deque
+
 import carla
+import numpy as np
+
 from agents.tools.misc import get_speed
 
 

@@ -1,9 +1,7 @@
 import yaml
 
 from core.carla_core import kill_all_servers
-
 from modules.data_reader import WebDatasetReader
-
 from utils import find_tar_files
 
 # Run the simulation

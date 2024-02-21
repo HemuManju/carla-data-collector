@@ -1,12 +1,7 @@
 import math
 
-from collections import deque
-
 import numpy as np
-from gym.spaces import Box, Discrete, Dict
-
-from torchvision import transforms
-
+from gym.spaces import Box, Dict
 
 try:
     import carla

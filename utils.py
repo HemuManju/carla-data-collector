@@ -1,13 +1,11 @@
 import os
 import sys
 from contextlib import contextmanager
-
-
 from pathlib import Path
-import natsort
 
-import numpy as np
 import matplotlib.pyplot as plt
+import natsort
+import numpy as np
 
 
 class SkipWith(Exception):

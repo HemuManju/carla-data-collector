@@ -7,14 +7,13 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 import collections.abc
+import glob
 import os
 import shutil
-import glob
 import sys
 
 import cv2
 import numpy as np
-
 from tensorboard import program
 
 try:
@@ -31,10 +30,11 @@ try:
 except IndexError:
     pass
 
-import carla
-from datetime import datetime
 import re
 import socket
+from datetime import datetime
+
+import carla
 
 
 def get_ip(host):
