@@ -14,8 +14,7 @@ from shapely.geometry import Polygon
 from agents.navigation.basic_agent import BasicAgent
 from agents.navigation.behavior_types import Aggressive, Cautious, Normal
 from agents.navigation.local_planner import RoadOption
-from agents.tools.misc import (compute_distance, get_speed, is_within_distance,
-                               positive)
+from agents.tools.misc import compute_distance, get_speed, is_within_distance, positive
 
 
 class BehaviorAgent(BasicAgent):
@@ -31,7 +30,7 @@ class BehaviorAgent(BasicAgent):
     are encoded in the agent, from cautious to a more aggressive ones.
     """
 
-    def __init__(self, vehicle, target_speed=20.0, opt_dict={}, behavior='normal'):
+    def __init__(self, vehicle, target_speed=20.0, opt_dict={}, behavior="normal"):
         """
         Constructor method.
 
@@ -54,13 +53,13 @@ class BehaviorAgent(BasicAgent):
         # self._sampling_resolution = 4.5
 
         # Parameters for agent behavior
-        if behavior == 'cautious':
+        if behavior == "cautious":
             self._behavior = Cautious()
 
-        elif behavior == 'normal':
+        elif behavior == "normal":
             self._behavior = Normal()
 
-        elif behavior == 'aggressive':
+        elif behavior == "aggressive":
             self._behavior = Aggressive()
 
     def _update_information(self):
@@ -141,7 +140,8 @@ class BehaviorAgent(BasicAgent):
         ego_extent = self._vehicle.bounding_box.extent.x
         ego_front_transform = ego_transform
         ego_front_transform.location += carla.Location(
-            x=ego_extent * ego_forward_vector.x, y=ego_extent * ego_forward_vector.y,
+            x=ego_extent * ego_forward_vector.x,
+            y=ego_extent * ego_forward_vector.y,
         )
 
         for target_vehicle in vehicle_list:
@@ -152,7 +152,6 @@ class BehaviorAgent(BasicAgent):
 
             # Simplified version for outside junctions
             if not ego_wpt.is_junction or not target_wpt.is_junction:
-
                 if (
                     target_wpt.road_id != ego_wpt.road_id
                     or target_wpt.lane_id != ego_wpt.lane_id + lane_offset
@@ -490,10 +489,10 @@ class BehaviorAgent(BasicAgent):
 
         # Return the collision data
         collision_data = {
-            'vehicle_state': vehicle_state,
-            'dist_to_vehicle': distance,
-            'walker_state': walker_state,
-            'dist_to_walker': w_distance,
+            "vehicle_state": vehicle_state,
+            "dist_to_vehicle": distance,
+            "walker_state": walker_state,
+            "dist_to_walker": w_distance,
         }
 
         return collision_data

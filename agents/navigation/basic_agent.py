@@ -12,9 +12,12 @@ import carla
 
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.navigation.local_planner import LocalPlanner
-from agents.tools.misc import (get_acceleration, get_speed,
-                               get_trafficlight_trigger_location,
-                               is_within_distance)
+from agents.tools.misc import (
+    get_acceleration,
+    get_speed,
+    get_trafficlight_trigger_location,
+    is_within_distance,
+)
 
 from .local_planner import compute_modified_connection
 from .utils import process_waypoints
@@ -53,21 +56,21 @@ class BasicAgent(object):
         self._max_brake = 0.5
 
         # Change parameters according to the dictionary
-        opt_dict['target_speed'] = target_speed
-        if 'ignore_traffic_lights' in opt_dict:
-            self._ignore_traffic_lights = opt_dict['ignore_traffic_lights']
-        if 'ignore_stop_signs' in opt_dict:
-            self._ignore_stop_signs = opt_dict['ignore_stop_signs']
-        if 'ignore_vehicles' in opt_dict:
-            self._ignore_vehicles = opt_dict['ignore_vehicles']
-        if 'sampling_resolution' in opt_dict:
-            self._sampling_resolution = opt_dict['sampling_resolution']
-        if 'base_tlight_threshold' in opt_dict:
-            self._base_tlight_threshold = opt_dict['base_tlight_threshold']
-        if 'base_vehicle_threshold' in opt_dict:
-            self._base_vehicle_threshold = opt_dict['base_vehicle_threshold']
-        if 'max_brake' in opt_dict:
-            self._max_steering = opt_dict['max_brake']
+        opt_dict["target_speed"] = target_speed
+        if "ignore_traffic_lights" in opt_dict:
+            self._ignore_traffic_lights = opt_dict["ignore_traffic_lights"]
+        if "ignore_stop_signs" in opt_dict:
+            self._ignore_stop_signs = opt_dict["ignore_stop_signs"]
+        if "ignore_vehicles" in opt_dict:
+            self._ignore_vehicles = opt_dict["ignore_vehicles"]
+        if "sampling_resolution" in opt_dict:
+            self._sampling_resolution = opt_dict["sampling_resolution"]
+        if "base_tlight_threshold" in opt_dict:
+            self._base_tlight_threshold = opt_dict["base_tlight_threshold"]
+        if "base_vehicle_threshold" in opt_dict:
+            self._base_vehicle_threshold = opt_dict["base_vehicle_threshold"]
+        if "max_brake" in opt_dict:
+            self._max_steering = opt_dict["max_brake"]
 
         # Initialize the planners
         self._local_planner = LocalPlanner(self._vehicle, opt_dict=opt_dict)
@@ -86,7 +89,6 @@ class BasicAgent(object):
         return control
 
     def get_vehicle_data(self, control):
-
         # Get location
         location = self._vehicle.get_location()
         velocity = self._vehicle.get_velocity()
@@ -96,14 +98,14 @@ class BasicAgent(object):
         v_vec = vehicle_transform.get_forward_vector()
 
         vehicle_data = {
-            'throttle': control.throttle,
-            'steer': control.steer,
-            'brake': control.brake,
-            'speed': get_speed(self._vehicle) / 3.6,
-            'acceleration': get_acceleration(self._vehicle),
-            'location': [location.x, location.y, location.z],
-            'moving_direction': [v_vec.x, v_vec.y, 0.0],
-            'velocity': [velocity.x, velocity.y, 0],
+            "throttle": control.throttle,
+            "steer": control.steer,
+            "brake": control.brake,
+            "speed": get_speed(self._vehicle) / 3.6,
+            "acceleration": get_acceleration(self._vehicle),
+            "location": [location.x, location.y, location.z],
+            "moving_direction": [v_vec.x, v_vec.y, 0.0],
+            "velocity": [velocity.x, velocity.y, 0],
         }
         return vehicle_data
 
@@ -118,24 +120,27 @@ class BasicAgent(object):
             lights_list, max_tlight_distance
         )
 
-        # Attributes
+        # Traffic light Attributes
         try:
             traffic_light.state
-            traffic_light_state = 'red'
+            traffic_light_state = "red"
+            distance_to_traffic_light = max_tlight_distance
         except AttributeError:
             traffic_light_state = -1
+            distance_to_traffic_light = -1
         traffic_data = {
-            'traffic_light_state': traffic_light_state,
-            'affected_by_traffic_light': affected_by_tlight,
+            "traffic_light_state": traffic_light_state,
+            "affected_by_traffic_light": affected_by_tlight,
+            "distance_to_traffic_light": distance_to_traffic_light,
         }
         return traffic_data
 
     def get_vehicle_collision_data(self):
         collision_data = {
-            'vehicle_state': -1,
-            'dist_to_vehicle': -1,
-            'walker_state': -1,
-            'dist_to_walker': -1,
+            "vehicle_state": -1,
+            "dist_to_vehicle": -1,
+            "walker_state": -1,
+            "dist_to_walker": -1,
         }
         return collision_data
 
@@ -152,9 +157,9 @@ class BasicAgent(object):
         processed_waypoints = process_waypoints(waypoints, current)
 
         waypoint_data = {
-            'waypoints': processed_waypoints,
-            'direction': directions[0].value,
-            'modified_direction': modified_direction.value,
+            "waypoints": processed_waypoints,
+            "direction": directions[0].value,
+            "modified_direction": modified_direction.value,
         }
 
         return waypoint_data
@@ -358,7 +363,8 @@ class BasicAgent(object):
         ego_extent = self._vehicle.bounding_box.extent.x
         ego_front_transform = ego_transform
         ego_front_transform.location += carla.Location(
-            x=ego_extent * ego_forward_vector.x, y=ego_extent * ego_forward_vector.y,
+            x=ego_extent * ego_forward_vector.x,
+            y=ego_extent * ego_forward_vector.y,
         )
 
         for target_vehicle in vehicle_list:
