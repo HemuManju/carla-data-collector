@@ -11,6 +11,15 @@ from utils import (
 )
 
 
+def default(obj):
+    if type(obj).__module__ == np.__name__:
+        if isinstance(obj.ndarray):
+            return obj.tolist()
+        else:
+            return obj.item()
+    raise TypeError("Unkown type:", type(obj))
+
+
 class WebDatasetWriter:
     def __init__(self, config) -> None:
         self.cfg = config
@@ -65,7 +74,7 @@ class WebDatasetWriter:
         return {
             "__key__": "sample%06d" % index,
             "jpeg": image_data,
-            "json": remaining_data,
+            "json": encoded_data,
         }
 
     def write(self, data, index):
