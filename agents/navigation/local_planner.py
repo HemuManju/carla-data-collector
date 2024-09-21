@@ -291,7 +291,7 @@ class LocalPlanner(object):
             try:
                 wpt, direction = self._waypoints_queue[-1]
                 return wpt, direction
-            except IndexError as i:
+            except IndexError:
                 return None, RoadOption.VOID
 
     def get_waypoints_and_direction(self, steps=3):
@@ -316,7 +316,7 @@ class LocalPlanner(object):
 
                 # wpt, direction = self._waypoints_queue[-1]
                 return waypoints, directions
-            except (IndexError, ValueError) as i:
+            except (IndexError, ValueError):
                 return [None] * steps, [RoadOption.VOID] * steps
 
     def done(self):
@@ -397,7 +397,7 @@ def compute_modified_connection(
 
         try:
             c = current_waypoint.transform.rotation.yaw
-        except Exception as e:
+        except Exception:
             c = current_waypoint.rotation.yaw
         c = c % 360.0
 

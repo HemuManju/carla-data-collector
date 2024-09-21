@@ -6,22 +6,25 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
+import logging
 import os
 import random
 import signal
 import subprocess
 import time
+from importlib.metadata import version
+
 import psutil
-import logging
+from packaging.version import Version
 
 try:
     import carla
 except ModuleNotFoundError:
     pass
 
-from .sensors.sensor_interface import SensorInterface
-from .sensors.factory import SensorFactory
 from .helper import join_dicts
+from .sensors.factory import SensorFactory
+from .sensors.sensor_interface import SensorInterface
 
 BASE_CORE_CONFIG = {
     "host": "localhost",  # Client host
@@ -100,11 +103,18 @@ class CarlaCore:
                 "-ResY={}".format(self.config["resolution_y"]),
             ]
         else:
-            server_command = [
-                "DISPLAY= ",
-                "{}/CarlaUE4.sh".format(os.environ["CARLA_ROOT"]),
-                "-opengl",  # no-display isn't supported for Unreal 4.24 with vulkan
-            ]
+            if Version(version("carla")) <= Version("0.9.11"):
+                server_command = [
+                    "DISPLAY= ",
+                    "{}/CarlaUE4.sh".format(os.environ["CARLA_ROOT"]),
+                    "-opengl",  # no-display isn't supported for Unreal 4.24 with vulkan
+                ]
+            else:
+                server_command = [
+                    "{}/CarlaUE4.sh".format(os.environ["CARLA_ROOT"]),
+                    "-vulkan",  # no-display isn't supported for Unreal 4.24 with vulkan
+                    "-RenderOffScreen",
+                ]
 
         server_command += [
             "--carla-rpc-port={}".format(self.server_port),
@@ -209,11 +219,11 @@ class CarlaCore:
             self.hero = None
 
         self.hero_blueprints = self.world.get_blueprint_library().find(
-            hero_config['blueprint']
+            hero_config["blueprint"]
         )
         self.hero_blueprints.set_attribute("role_name", "hero")
-        random.shuffle(hero_config['route_points'], random.random)
-        for points in hero_config['route_points']:
+        random.shuffle(hero_config["route_points"], random.random)
+        for points in hero_config["route_points"]:
             try:
                 # Get the start and end points of the
                 self.start_point = carla.Transform(
@@ -275,12 +285,12 @@ class CarlaCore:
             if n >= n_vehicles:
                 break
             v_blueprint = random.choice(v_blueprints)
-            if v_blueprint.has_attribute('color'):
+            if v_blueprint.has_attribute("color"):
                 color = random.choice(
-                    v_blueprint.get_attribute('color').recommended_values
+                    v_blueprint.get_attribute("color").recommended_values
                 )
-                v_blueprint.set_attribute('color', color)
-            v_blueprint.set_attribute('role_name', 'autopilot')
+                v_blueprint.set_attribute("color", color)
+            v_blueprint.set_attribute("role_name", "autopilot")
 
             transform.location.z += 1
             v_batch.append(
@@ -308,8 +318,8 @@ class CarlaCore:
 
         for spawn_location in spawn_locations:
             w_blueprint = random.choice(w_blueprints)
-            if w_blueprint.has_attribute('is_invincible'):
-                w_blueprint.set_attribute('is_invincible', 'false')
+            if w_blueprint.has_attribute("is_invincible"):
+                w_blueprint.set_attribute("is_invincible", "false")
             w_batch.append(SpawnActor(w_blueprint, carla.Transform(spawn_location)))
 
         results = self.client.apply_batch_sync(w_batch, True)
@@ -323,7 +333,7 @@ class CarlaCore:
 
         # Spawn the walker controllers
         wc_batch = []
-        wc_blueprint = self.world.get_blueprint_library().find('controller.ai.walker')
+        wc_blueprint = self.world.get_blueprint_library().find("controller.ai.walker")
 
         for walker_id in walkers_id_list:
             wc_batch.append(SpawnActor(wc_blueprint, carla.Transform(), walker_id))

@@ -1,14 +1,11 @@
-import numpy as np
-import imageio as iio
-
+from itertools import islice
 from pathlib import Path
 
+import imageio as iio
+import numpy as np
 import pandas as pd
-
-import webdataset as wds
 import torch
-
-from itertools import islice
+import webdataset as wds
 
 from utils import get_nonexistant_path
 
@@ -19,19 +16,19 @@ class Replay:
         self.n_collision = 0
 
     def _get_unique_name(self, file_name, write_path):
-        fname_path = Path(write_path, file_name).with_suffix('.mp4')
+        fname_path = Path(write_path, file_name).with_suffix(".mp4")
         save_path = get_nonexistant_path(fname_path=fname_path)
         return save_path
 
     def _create_movie(self, samples, file_name, write_path):
         save_path = self._get_unique_name(file_name, write_path)
-        writer = iio.get_writer(save_path, format='FFMPEG', mode='I', codec='mpeg4')
+        writer = iio.get_writer(save_path, format="FFMPEG", mode="I", codec="mpeg4")
 
         for i, sample in enumerate(samples):
-            if type(sample['jpeg']) is list:
-                array = torch.stack(sample['jpeg'], dim=0).cpu().detach().numpy()
+            if isinstance(sample["jpeg"], list):
+                array = torch.stack(sample["jpeg"], dim=0).cpu().detach().numpy()
             else:
-                array = sample['jpeg'].cpu().detach().numpy()
+                array = sample["jpeg"].cpu().detach().numpy()
             array = np.swapaxes(array, 0, 2) * 255  # Scaling co-efficient
 
             # Write the array
@@ -46,10 +43,10 @@ class Summary:
     def summarize(self, samples):
         data = []
         for sample in samples:
-            data.append(sample['json'])
+            data.append(sample["json"])
 
         df = pd.DataFrame(data)
-        print(df.groupby('modified_direction').count())
+        print(df.groupby("modified_direction").count())
         print(df.describe())
 
 

@@ -1,7 +1,7 @@
 ##------------------CARLA server config------------------##
 carla_server:
   host: 'localhost'
-  timeout: 2.0
+  timeout: 10.0
   timestep: 0.1
   retries_on_error: 25
   resolution_x: 600
@@ -18,27 +18,20 @@ available_weathers: [
     'MidRainSunset', # Done
     'ClearNoon', # Done
     'SoftRainNoon', # Done
-    'HardRainNoon', # Testing (Done)
-    'ClearSunset', # Testing (not done)
+    'HardRainNoon', # Testing
+    'ClearSunset', # Testing
     'SoftRainSunset', # Done
     'HardRainSunset', # Testing
   ]
 experiment:
-  weather:
-    [
-      'HardRainSunset',
-      'ClearNoon',
-      'SoftRainNoon',
-      'SoftRainSunset',
-      'HardRainNoon',
-    ]
+  weather: ['MidRainSunset', 'ClearNoon'] # 'HardRainNoon', 'SoftRainSunset'
   background_activity:
-    n_vehicles: 50
-    n_walkers: 20
+    n_vehicles: 0
+    n_walkers: 0
     tm_hybrid_mode: True
     seed: null
   town: 'Town01'
-  navigation_type: ['navigation'] # 'straight'
+  navigation_type: ['one_curve', 'straight'] #navigation
 
 ##------------------Vehicle config------------------##
 vehicle:

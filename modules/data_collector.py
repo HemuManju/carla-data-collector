@@ -1,4 +1,3 @@
-import random
 import os
 from tqdm import tqdm
 import itertools
@@ -12,7 +11,6 @@ from core.carla_core import kill_all_servers
 from core.helper import inspect
 
 from agents.navigation.behavior_agent import BehaviorAgent
-from agents.navigation.basic_agent import BasicAgent
 
 from .carla_server import CarlaServer
 from .pre_process import PreProcessData
